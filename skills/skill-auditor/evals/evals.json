@@ -1,0 +1,47 @@
+{
+  "skill_name": "skill-auditor",
+  "evals": [
+    {
+      "id": 0,
+      "name": "broken-fixture-he",
+      "setup": "node <skill>/scripts/selftest.mjs --fixture-dir G:/tmp/skill-auditor-eval (creates G:/tmp/skill-auditor-eval/broken-skill)",
+      "prompt": "בניתי סקיל חדש ב-G:/tmp/skill-auditor-eval/broken-skill ונראה לי שהוא לא נטען כמו שצריך. תבדוק אותו ותתקן מה שצריך.",
+      "expected_output": "Runs audit-skill.mjs on the folder, explains that the frontmatter YAML error makes Claude Code drop every field, fixes the errors with minimal edits (quoting, field migration, forward slashes, plain hyphens, broken links reported or fixed), re-runs until 0 errors, does not rewrite the description wording or rename the folder without asking, and reports counts before and after plus the remaining warnings with reasons.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "audit-all-read-only-en",
+      "prompt": "Can you check all my skills against the standard and tell me which ones are broken? Don't change anything yet.",
+      "expected_output": "Runs audit-skill.mjs with --each on the skills root, edits nothing, and reports a per-skill table (errors, warnings) with the most important findings first and the skills with frontmatter-parse errors called out, then asks which skills to fix.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "not-triggering-needs-approval",
+      "prompt": "The rive-studio skill doesn't kick in when I ask for an animated button. Fix it.",
+      "expected_output": "Runs the audit on rive-studio, then one fresh critic with critic-prompt.md that writes should-trigger and should-not-trigger requests, proposes a description or when_to_use change with the trigger table, and waits for approval before editing the description. Does not rename the skill.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "fix-loop-dashes-he",
+      "prompt": "תעבור על הסקיל pattern-breaker ותתקן את כל המקפים הארוכים והנתיבים עם לוכסן הפוך.",
+      "expected_output": "Runs the audit, replaces every en dash, em dash and maqaf with a plain hyphen, a colon or a rewrite (ranges as 15-30, Hebrew prefixes as ב-2025), turns backslash paths into forward slashes, re-runs until the dash and backslash-path counts are 0, and touches nothing else.",
+      "files": []
+    }
+  ],
+  "trigger_evals": [
+    { "query": "בדוק סקיל pattern-breaker לפי התקן", "should_trigger": true },
+    { "query": "is this skill valid? ~/.claude/skills/obsidian-writer", "should_trigger": true },
+    { "query": "ביקורת סקיל לפני שאני משתף אותו עם מוריה", "should_trigger": true },
+    { "query": "my skill stopped triggering after I edited its description, can you check what is wrong", "should_trigger": true },
+    { "query": "lint every SKILL.md in my skills folder", "should_trigger": true },
+    { "query": "תבקר את הסקיל rive-studio ותגיד לי אם יש בו סתירות", "should_trigger": true },
+    { "query": "create a new skill that writes Facebook posts in my style", "should_trigger": false },
+    { "query": "audit my website before I hand it to the client", "should_trigger": false },
+    { "query": "review this pull request for security issues", "should_trigger": false },
+    { "query": "תבדוק אם הטסטים בפרויקט אמיתיים או מזויפים", "should_trigger": false },
+    { "query": "בדוק את האתר במובייל, משהו קופץ בגלילה", "should_trigger": false }
+  ]
+}

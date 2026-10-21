@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sitemap Template for MediaWave Landing Pages
+
+  Usage: Replace {{DOMAIN}} with the actual domain.
+  For Next.js: Prefer using app/sitemap.ts (see below).
+
+  Next.js App Router implementation:
+
+  // app/sitemap.ts
+  import { MetadataRoute } from 'next'
+
+  export default function sitemap(): MetadataRoute.Sitemap {
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://{{DOMAIN}}'
+    const now = new Date().toISOString()
+
+    return [
+      {
+        url: baseUrl,
+        lastModified: now,
+        changeFrequency: 'weekly',
+        priority: 1,
+      },
+      {
+        url: `${baseUrl}/privacy`,
+        lastModified: now,
+        changeFrequency: 'monthly',
+        priority: 0.3,
+      },
+      {
+        url: `${baseUrl}/terms`,
+        lastModified: now,
+        changeFrequency: 'monthly',
+        priority: 0.3,
+      },
+      {
+        url: `${baseUrl}/accessibility`,
+        lastModified: now,
+        changeFrequency: 'monthly',
+        priority: 0.3,
+      },
+    ]
+  }
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Main Landing Page -->
+  <url>
+    <loc>https://{{DOMAIN}}/</loc>
+    <lastmod>{{DATE}}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Privacy Policy -->
+  <url>
+    <loc>https://{{DOMAIN}}/privacy</loc>
+    <lastmod>{{DATE}}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- Terms of Service -->
+  <url>
+    <loc>https://{{DOMAIN}}/terms</loc>
+    <lastmod>{{DATE}}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- Accessibility Statement -->
+  <url>
+    <loc>https://{{DOMAIN}}/accessibility</loc>
+    <lastmod>{{DATE}}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>

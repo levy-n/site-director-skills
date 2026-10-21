@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מעבדת הפרטים</title>
+<style>
+@font-face{font-family:"MW Noto";src:url("../../public/fonts/noto/noto-sans-hebrew-hebrew-standard-normal.woff2") format("woff2");font-weight:100 900;font-stretch:62.5% 100%;font-display:swap;unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:"MW Noto";src:url("../../public/fonts/noto/noto-sans-hebrew-latin-standard-normal.woff2") format("woff2");font-weight:100 900;font-stretch:62.5% 100%;font-display:swap;unicode-range:U+0000-00FF,U+2000-206F}
+:root{
+  --ground:#EDE7DA;--paper:#FFFFFF;--ink:#1A1917;--ink-2:#4D4942;--line:rgba(26,25,23,.14);
+  --prussian:#225079;--tape:#2B2520;--rec:#C8372D;
+  --ease:cubic-bezier(.16,1,.3,1);--mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0}
+html{background:var(--ground);color:var(--ink);font-family:"MW Noto","Noto Sans Hebrew",Arial,sans-serif;-webkit-text-size-adjust:100%}
+body{background:var(--ground);line-height:1.65}
+button{font:inherit;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+.mono{font-family:var(--mono);font-size:12px;letter-spacing:.08em;direction:ltr;unicode-bidi:isolate}
+
+/* intro */
+.intro{min-height:78svh;display:grid;align-content:center;gap:20px;padding:64px 0 48px}
+.intro h1{font-size:clamp(40px,9vw,96px);font-weight:800;font-stretch:75%;line-height:1}
+.intro p{max-width:46ch;color:var(--ink-2);font-size:17px}
+.rule{display:flex;gap:10px;flex-wrap:wrap}
+.rule span{border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:14px;color:var(--ink-2);background:rgba(255,255,255,.5)}
+
+/* sections */
+section.layer{padding:56px 0 24px;border-top:1px solid var(--line)}
+.layer > .wrap > header{display:grid;gap:8px;margin-bottom:28px}
+.layer h2{font-size:clamp(28px,5vw,48px);font-weight:800;font-stretch:75%;line-height:1.05}
+.layer header p{color:var(--ink-2);max-width:56ch}
+.grid{display:grid;gap:16px;grid-template-columns:1fr}
+@media (min-width:760px){.grid{grid-template-columns:1fr 1fr}}
+@media (min-width:1100px){.grid.three{grid-template-columns:1fr 1fr 1fr}}
+
+/* card */
+.card{position:relative;background:var(--paper);border-radius:4px;padding:20px;display:grid;gap:16px;align-content:start;box-shadow:0 1px 0 rgba(26,25,23,.06),0 12px 32px -20px rgba(26,25,23,.25)}
+.card > header{display:flex;align-items:baseline;gap:12px}
+.card h3{font-size:20px;font-weight:800;font-stretch:80%}
+.code{color:var(--ink-2)}
+.demo{position:relative;min-height:190px;display:grid;place-items:center;overflow:hidden;text-align:center;border-radius:3px;background:var(--ground);padding:24px 16px}
+.demo p{font-size:18px;line-height:1.7;max-width:26ch}
+.demo.stage-pop{min-height:280px;align-content:end;padding-bottom:32px}
+.meta{display:grid;gap:4px;font-size:14px;color:var(--ink-2)}
+.meta div{display:flex;gap:8px}.meta dt{font-weight:700;color:var(--ink);min-width:4.5em}
+.try{justify-self:start;min-height:44px;padding:0 16px;border:1px solid var(--ink);border-radius:2px;background:transparent;cursor:pointer;font-weight:700}
+.try[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+
+/* service words (S1-S3) */
+.w{all:unset;cursor:pointer;font-weight:800;color:var(--prussian);position:relative;border-radius:2px;outline-offset:3px}
+.w:focus-visible{outline:3px solid var(--ink)}
+.pop{position:absolute;inset-inline-start:50%;bottom:calc(100% + 10px);translate:50% 0;pointer-events:none;opacity:0;transform:translateY(8px) scale(.86);transform-origin:50% 100%;transition:opacity .25s var(--ease),transform .45s var(--ease);z-index:3}
+.pop.on{opacity:1;transform:none}
+.pop svg{display:block;filter:drop-shadow(0 10px 16px rgba(26,25,23,.18))}
+.reel{transform-box:fill-box;transform-origin:center}
+.pop.on .reel{animation:spin 1.3s cubic-bezier(.2,.7,.2,1) both}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(-720deg)}}
+.memory .scene{filter:brightness(1.9) saturate(0) blur(2px);transition:filter 1.8s cubic-bezier(.3,.1,.2,1) .15s}
+.pop.on .memory .scene{filter:brightness(1) saturate(.75) blur(0)}
+.site .b{transform:scaleX(0);transform-origin:100% 50%;transition:transform .5s var(--ease)}
+.pop.on .site .b{transform:scaleX(1)}
+.site .url{font:600 7px var(--mono)}
+
+/* S4 rec */
+.rec{position:fixed;inset:14px;pointer-events:none;z-index:40;opacity:0;transition:opacity .4s var(--ease)}
+.rec.on{opacity:1}
+.rec i{position:absolute;width:26px;height:26px;border:2px solid var(--ink)}
+.rec i:nth-child(1){top:0;left:0;border-right:0;border-bottom:0}.rec i:nth-child(2){top:0;right:0;border-left:0;border-bottom:0}
+.rec i:nth-child(3){bottom:0;left:0;border-right:0;border-top:0}.rec i:nth-child(4){bottom:0;right:0;border-left:0;border-top:0}
+.rec .hud{position:absolute;top:10px;right:40px;display:flex;gap:14px;align-items:center;font:700 13px var(--mono);direction:ltr}
+.rec .dot{width:9px;height:9px;border-radius:50%;background:var(--rec);animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* S5 rewind */
+.rew{position:fixed;inset:0;z-index:45;pointer-events:none;opacity:0;transition:opacity .18s linear;
+  background:repeating-linear-gradient(0deg,rgba(26,25,23,.07) 0 1px,transparent 1px 4px)}
+.rew.on{opacity:1}
+.rew .band{position:absolute;inset-inline:0;height:14px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);mix-blend-mode:screen;top:30%}
+.rew .hud{position:absolute;top:24px;right:24px;font:700 15px var(--mono);direction:ltr;background:var(--ink);color:var(--paper);padding:6px 10px;border-radius:2px}
+
+/* S6 counter */
+.counter{position:fixed;top:14px;left:14px;z-index:30;display:flex;gap:1px;background:var(--ink);color:var(--paper);padding:5px 7px;border-radius:3px;font:700 13px/1 var(--mono);direction:ltr;opacity:0;transform:translateY(-6px);transition:opacity .3s var(--ease),transform .3s var(--ease)}
+.counter.on{opacity:1;transform:none}
+.counter .d{height:1em;overflow:hidden;width:.62em}
+.counter .col{display:grid;transition:transform .35s var(--ease)}
+
+/* S7 copy label */
+.phone{all:unset;cursor:pointer;font:800 26px var(--mono);direction:ltr;position:relative;padding:4px 6px;border-radius:2px}
+.phone:focus-visible{outline:3px solid var(--ink)}
+.label{position:absolute;top:-22px;left:50%;translate:-50% 0;background:#EFE3BF;color:var(--ink);font:700 15px "MW Noto",Arial,sans-serif;padding:4px 14px;box-shadow:0 2px 6px rgba(26,25,23,.18);opacity:0;transform:rotate(-14deg) scale(1.25);transition:opacity .15s linear,transform .35s cubic-bezier(.3,1.6,.5,1);pointer-events:none;
+  -webkit-mask:radial-gradient(circle at 0 50%,transparent 3px,#000 3.5px) left/51% 100% no-repeat,radial-gradient(circle at 100% 50%,transparent 3px,#000 3.5px) right/51% 100% no-repeat}
+.label.on{opacity:1;transform:rotate(-4deg) scale(1)}
+
+/* H buttons */
+.key{position:relative;min-height:56px;padding:0 22px;border:0;border-radius:2px;cursor:pointer;display:inline-flex;align-items:center;gap:12px;font-weight:700;font-size:17px;overflow:hidden;isolation:isolate}
+.key:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.k1{background:var(--ink);color:var(--paper)}
+.k1 .bg{position:absolute;inset:0;background:var(--ink);z-index:-1;transition:transform .3s var(--ease),background-color .3s var(--ease)}
+.k1:hover .bg,.k1:focus-visible .bg{transform:scale(.97);background:#2A2825}
+.roll{display:grid;height:1.4em;overflow:hidden;line-height:1.4em}
+.roll span{grid-area:1/1;transition:transform .55s var(--ease),opacity .4s var(--ease)}
+.roll span:last-child{transform:translateY(100%);opacity:0}
+.key:hover .roll span:first-child,.key:focus-visible .roll span:first-child{transform:translateY(-100%);opacity:0}
+.key:hover .roll span:last-child,.key:focus-visible .roll span:last-child{transform:none;opacity:1}
+.ic{position:relative;width:18px;height:18px;display:grid}
+.ic svg{grid-area:1/1;transition:transform .45s var(--ease)}
+.ic svg:last-child{transform:scale(0)}
+.key:hover .ic svg:first-child,.key:focus-visible .ic svg:first-child{transform:scale(0)}
+.key:hover .ic svg:last-child,.key:focus-visible .ic svg:last-child{transform:scale(1)}
+.k2{background:var(--paper);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink);transition:color .35s var(--ease)}
+.k2::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--ink);clip-path:circle(0 at var(--x,50%) var(--y,50%));transition:clip-path .55s var(--ease)}
+.k2:hover,.k2:focus-visible{color:var(--paper)}
+.k2:hover::before,.k2:focus-visible::before{clip-path:circle(150% at var(--x,50%) var(--y,50%))}
+.cursor-label{position:fixed;top:0;left:0;z-index:50;pointer-events:none;background:var(--ink);color:var(--paper);font:700 13px "MW Noto",Arial,sans-serif;padding:5px 10px;border-radius:2px;opacity:0;transform:translate(-50%,-50%) scale(.8);transition:opacity .2s linear,scale .3s var(--ease);will-change:translate}
+.cursor-label.on{opacity:1;scale:1.25}
+
+/* scroll link + end */
+.go{display:inline-flex;align-items:center;min-height:52px;padding:0 20px;background:var(--ink);color:var(--paper);text-decoration:none;font-weight:700;border-radius:2px}
+.end{padding:72px 0 160px;border-top:1px solid var(--line);display:grid;gap:16px}
+.end h2{font-size:clamp(28px,5vw,48px);font-weight:800;font-stretch:75%}
+.end ol{display:grid;gap:6px;padding-inline-start:1.2em;color:var(--ink-2)}
+
+/* trail bar */
+canvas.trail{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:20;mix-blend-mode:multiply}
+.bar{position:fixed;bottom:12px;inset-inline:12px;z-index:35;display:flex;justify-content:center;pointer-events:none}
+.bar div{pointer-events:auto;display:flex;gap:2px;background:var(--paper);padding:4px;border-radius:4px;box-shadow:0 8px 24px -10px rgba(26,25,23,.35)}
+.bar button{min-height:44px;min-width:56px;padding:0 12px;border:0;border-radius:2px;background:transparent;cursor:pointer;font-size:14px;font-weight:700;color:var(--ink-2)}
+.bar button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.force{position:fixed;bottom:76px;inset-inline:16px;z-index:36;min-height:48px;border:0;border-radius:4px;background:var(--prussian);color:#fff;font-weight:700;cursor:pointer}
+@media (prefers-reduced-motion: reduce){html:not(.force) *{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<canvas class="trail" id="trail" aria-hidden="true"></canvas>
+
+<header class="intro wrap">
+  <span class="mono">MEDIAWAVE · DETAILS LAB · 19.10.2026</span>
+  <h1>מעבדת הפרטים</h1>
+  <p>כל דוגמה כאן היא פרט אחד מהעולם שלנו: קלטות, וידאו ואתרים. הזיזו את העכבר, גללו, רחפו מעל מילים והקישו.
+  באתר עצמו ייכנסו מעטים, כדי שיישאר שקט ואלגנטי:</p>
+  <div class="rule"><span>שובל אחד</span><span>עד שלוש הפתעות</span><span>סגנון כפתור אחד</span><span>מנגנון גלילה אחד</span></div>
+</header>
+
+<section class="layer" aria-labelledby="h-t">
+  <div class="wrap">
+    <header><span class="mono">T · TRAILS</span><h2 id="h-t">שובל שהולך עם העכבר</h2>
+      <p>בוחרים שובל בסרגל למטה, והוא נשאר דולק בכל העמוד. בטלפון הוא הולך אחרי האצבע.</p></header>
+    <div class="grid three">
+      <article class="card"><header><span class="code mono">T1</span><h3>חשיפה כחולה</h3></header>
+        <p>העכבר חושף את הנייר כמו אור שמש על נייר ציאנוטייפ, בכחול של הלוגו. כשנשארים במקום, הכתם מעמיק. אחרי רגע הוא נעלם, כאילו התפתח.</p>
+        <dl class="meta"><div><dt>מהעולם</dt><dd>הדפסת ציאנוטייפ, הצבעים של הלוגו</dd></div><div><dt>שירות</dt><dd>כל האתר</dd></div></dl>
+        <button class="try" data-trail="1" aria-pressed="false">להפעיל את T1</button></article>
+      <article class="card"><header><span class="code mono">T2</span><h3>סרט מגנטי</h3></header>
+        <p>חוט של סרט קלטת נגרר אחרי העכבר, מתפתל ונתלה. כשהעכבר נח, הוא נעלם בעדינות.</p>
+        <dl class="meta"><div><dt>מהעולם</dt><dd>הסרט שבתוך קלטת VHS</dd></div><div><dt>שירות</dt><dd>המרת קלטות</dd></div></dl>
+        <button class="try" data-trail="2" aria-pressed="false">להפעיל את T2</button></article>
+      <article class="card"><header><span class="code mono">T3</span><h3>קווי טרקינג</h3></header>
+        <p>קווים דקים ואופקיים, עם הסטה קלה של אדום וטורקיז, כמו רעש של וידאו ישן. האורך שלהם הוא המהירות.</p>
+        <dl class="meta"><div><dt>מהעולם</dt><dd>רעש טרקינג של מכשיר וידאו</dd></div><div><dt>שירות</dt><dd>עריכת וידאו, המרת קלטות</dd></div></dl>
+        <button class="try" data-trail="3" aria-pressed="false">להפעיל את T3</button></article>
+    </div>
+  </div>
+</section>
+
+<section class="layer" aria-labelledby="h-s">
+  <div class="wrap">
+    <header><span class="mono">S · SURPRISES</span><h2 id="h-s">דברים קטנים שקופצים</h2>
+      <p>כל אחד נדלק רק ממשהו שהמבקר עשה, קטן, ונעלם לבד.</p></header>
+    <div class="grid three">
+
+      <article class="card"><header><span class="code mono">S1</span><h3>הקלטת קופצת</h3></header>
+        <div class="demo stage-pop"><p>ממירים <button class="w" data-pop="cass" type="button">קלטות<span class="pop" aria-hidden="true">
+          <svg width="132" height="84" viewBox="0 0 132 84"><rect x="1" y="1" width="130" height="82" rx="7" fill="#fff" stroke="#1A1917" stroke-width="1.5"/>
+          <rect x="30" y="24" width="72" height="30" rx="15" fill="#EDE7DA" stroke="#1A1917"/>
+          <circle cx="48" cy="39" r="12" fill="#2B2520"/><circle cx="84" cy="39" r="7" fill="#2B2520"/>
+          <g class="reel"><circle cx="48" cy="39" r="5.5" fill="#fff" stroke="#1A1917"/><path d="M48 33.5v3M48 41.5v3M42.5 39h3M50.5 39h3" stroke="#1A1917" stroke-width="1.4"/></g>
+          <g class="reel"><circle cx="84" cy="39" r="5.5" fill="#fff" stroke="#1A1917"/><path d="M84 33.5v3M84 41.5v3M78.5 39h3M86.5 39h3" stroke="#1A1917" stroke-width="1.4"/></g>
+          <path d="M40 83l5-13h42l5 13" fill="none" stroke="#1A1917"/></svg></span></button> וידאו לקובץ דיגיטלי.</p></div>
+        <dl class="meta"><div><dt>מתי</dt><dd>מעבר או הקשה על המילה</dd></div><div><dt>מהעולם</dt><dd>קלטת VHS, הגלגלים מסתובבים ונעצרים</dd></div><div><dt>שירות</dt><dd>המרת קלטות</dd></div></dl></article>
+
+      <article class="card"><header><span class="code mono">S2</span><h3>הזיכרון מתפתח</h3></header>
+        <div class="demo stage-pop"><p>עורכים <button class="w" data-pop="memory" type="button">סרטוני זיכרונות<span class="pop" aria-hidden="true">
+          <svg class="memory" width="112" height="124" viewBox="0 0 112 124"><rect x="1" y="1" width="110" height="122" rx="2" fill="#fff" stroke="rgba(26,25,23,.25)"/>
+          <g class="scene"><rect x="9" y="9" width="94" height="84" fill="#C9B79A"/><circle cx="72" cy="36" r="11" fill="#F2E3C2"/>
+          <path d="M9 72c18-12 34-14 50-6s28 6 44-4v31H9z" fill="#8E7B5F"/><path d="M9 82c22-6 46-4 94 2v9H9z" fill="#6F5F48"/>
+          <circle cx="40" cy="70" r="4" fill="#3E342A"/><rect x="37" y="74" width="6" height="12" rx="2" fill="#3E342A"/>
+          <circle cx="52" cy="72" r="3" fill="#3E342A"/><rect x="50" y="75" width="4.5" height="10" rx="2" fill="#3E342A"/></g></svg></span></button> מהתמונות והסרטונים שלכם.</p></div>
+        <dl class="meta"><div><dt>מתי</dt><dd>מעבר או הקשה על המילים</dd></div><div><dt>מהעולם</dt><dd>תמונה שמתפתחת, מלבן לצבע</dd></div><div><dt>שירות</dt><dd>סרטוני זיכרונות</dd></div></dl></article>
+
+      <article class="card"><header><span class="code mono">S3</span><h3>אתר נבנה בשנייה</h3></header>
+        <div class="demo stage-pop"><p>בונים <button class="w" data-pop="site" type="button">אתרים<span class="pop" aria-hidden="true">
+          <svg class="site" width="150" height="106" viewBox="0 0 150 106"><rect x="1" y="1" width="148" height="104" rx="5" fill="#fff" stroke="#1A1917" stroke-width="1.5"/>
+          <path d="M1 16h148" stroke="rgba(26,25,23,.2)"/><circle cx="139" cy="8.5" r="2.5" fill="#1A1917"/><circle cx="131" cy="8.5" r="2.5" fill="rgba(26,25,23,.35)"/>
+          <text class="url" x="10" y="11" fill="#4D4942" direction="ltr" unicode-bidi="embed" text-anchor="start">mediawave.co.il</text>
+          <rect class="b" x="12" y="24" width="126" height="26" rx="2" fill="#1A1917" style="transition-delay:.05s"/>
+          <rect class="b" x="52" y="58" width="86" height="7" rx="2" fill="#4D4942" style="transition-delay:.15s"/>
+          <rect class="b" x="32" y="70" width="106" height="5" rx="2" fill="rgba(26,25,23,.3)" style="transition-delay:.24s"/>
+          <rect class="b" x="62" y="80" width="76" height="5" rx="2" fill="rgba(26,25,23,.3)" style="transition-delay:.32s"/>
+          <rect class="b" x="98" y="91" width="40" height="8" rx="2" fill="#225079" style="transition-delay:.42s"/></svg></span></button> לעסקים.</p></div>
+        <dl class="meta"><div><dt>מתי</dt><dd>מעבר או הקשה על המילה</dd></div><div><dt>מהעולם</dt><dd>דף שנבנה בלוקים, מימין לשמאל</dd></div><div><dt>שירות</dt><dd>בניית אתרים</dd></div></dl></article>
+
+      <article class="card"><header><span class="code mono">S4</span><h3>REC כשעוצרים</h3></header>
+        <div class="demo"><p>כשהמבקר לא זז 6 שניות, המסך הופך לעינית של מצלמה: פינות, נקודה אדומה וזמן שרץ. כל תזוזה מכבה.</p></div>
+        <dl class="meta"><div><dt>מתי</dt><dd>6 שניות בלי תזוזה</dd></div><div><dt>מהעולם</dt><dd>עינית של מצלמת וידאו ביתית</dd></div><div><dt>שירות</dt><dd>וידאו</dd></div></dl>
+        <button class="try" id="recNow" type="button">להדגים עכשיו</button></article>
+
+      <article class="card"><header><span class="code mono">S5</span><h3>הרצה אחורה</h3></header>
+        <div class="demo"><p>חזרה לראש הדף מריצה את הדף אחורה כמו קלטת: פסים, ◀◀ ומונה שיורד.</p></div>
+        <dl class="meta"><div><dt>מתי</dt><dd>לחיצה על "חזרה להתחלה"</dd></div><div><dt>מהעולם</dt><dd>REW במכשיר וידאו</dd></div><div><dt>שירות</dt><dd>המרת קלטות</dd></div></dl>
+        <button class="try" data-rewind type="button">חזרה להתחלה</button></article>
+
+      <article class="card"><header><span class="code mono">S6</span><h3>מונה הקלטת</h3></header>
+        <div class="demo"><p>מונה קטן בפינה, כמו המונה של מכשיר וידאו, סופר את הגלילה. הספרות מתגלגלות.</p></div>
+        <dl class="meta"><div><dt>מתי</dt><dd>תמיד, בזמן גלילה</dd></div><div><dt>מהעולם</dt><dd>מונה הסרט של מכשיר וידאו</dd></div><div><dt>שירות</dt><dd>המרת קלטות</dd></div></dl>
+        <button class="try" id="counterToggle" type="button" aria-pressed="false">להדליק את המונה</button></article>
+
+      <article class="card"><header><span class="code mono">S7</span><h3>תווית "הועתק"</h3></header>
+        <div class="demo"><button class="phone" id="phone" type="button" aria-label="העתקת מספר הטלפון 052-8731808">052-8731808<span class="label" aria-hidden="true">הועתק</span></button></div>
+        <dl class="meta"><div><dt>מתי</dt><dd>לחיצה על הטלפון: הוא מועתק</dd></div><div><dt>מהעולם</dt><dd>מדבקה בכתב יד על קלטת</dd></div><div><dt>שירות</dt><dd>יצירת קשר</dd></div></dl></article>
+    </div>
+  </div>
+</section>
+
+<section class="layer" aria-labelledby="h-h">
+  <div class="wrap">
+    <header><span class="mono">H · TWO-STATE KEYS</span><h2 id="h-h">כפתורים עם מצב שני</h2>
+      <p>במעבר העכבר הכפתור מחליף טקסט ואומר לאן הוא לוקח. בטלפון זה קורה בלחיצה.</p></header>
+    <div class="grid">
+      <article class="card"><header><span class="code mono">H1</span><h3>הטקסט מתגלגל</h3></header>
+        <div class="demo"><button class="key k1" type="button" data-cursor="וואטסאפ"><span class="bg"></span>
+          <span class="roll"><span>ספרו לנו</span><span>פותח וואטסאפ</span></span>
+          <span class="ic"><svg viewBox="0 0 18 18" width="18" height="18"><path d="M12 4L6 9l6 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          <svg viewBox="0 0 18 18" width="18" height="18"><path d="M9 2a7 7 0 0 0-6 10.5L2 16l3.6-1A7 7 0 1 0 9 2z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span></button></div>
+        <dl class="meta"><div><dt>מה קורה</dt><dd>הטקסט מתגלגל למעלה, החץ הופך לסמל וואטסאפ, ותווית קטנה הולכת עם העכבר</dd></div></dl></article>
+      <article class="card"><header><span class="code mono">H2</span><h3>הדיו נשפך מהצד שנכנסת</h3></header>
+        <div class="demo"><button class="key k2" type="button" id="k2">
+          <span class="roll"><span>בניית אתרים</span><span>לעמוד השירות</span></span></button></div>
+        <dl class="meta"><div><dt>מה קורה</dt><dd>דיו ממלא את הכפתור מהנקודה שבה העכבר נכנס, והטקסט מתחלף</dd></div></dl></article>
+    </div>
+  </div>
+</section>
+
+<section class="layer" aria-labelledby="h-g">
+  <div class="wrap">
+    <header><span class="mono">G · SCROLL</span><h2 id="h-g">חוויית גלילה</h2>
+      <p>שלושת התרגומים של האופניים של הדוב: הקלטת, המחשב ופס הפילם. כל חלק מחובר לגלילה ביחס קבוע.</p></header>
+    <a class="go" href="bike-translations.html">לסקיצת הגלילה</a>
+  </div>
+</section>
+
+<footer class="end wrap">
+  <h2>מה בוחרים</h2>
+  <ol>
+    <li>שובל אחד: T1, T2 או T3, או בלי.</li>
+    <li>עד שלוש הפתעות מתוך S1 עד S7.</li>
+    <li>כפתור אחד: H1 או H2.</li>
+    <li>מנגנון גלילה אחד: הקלטת, המחשב או פס הפילם.</li>
+  </ol>
+  <button class="try" data-rewind type="button">חזרה להתחלה (S5)</button>
+</footer>
+
+<div class="bar" role="group" aria-label="שובל"><div>
+  <button type="button" data-trail="1" aria-pressed="false">T1</button>
+  <button type="button" data-trail="2" aria-pressed="false">T2</button>
+  <button type="button" data-trail="3" aria-pressed="false">T3</button>
+  <button type="button" data-trail="0" aria-pressed="true">כבוי</button>
+</div></div>
+<button class="force" id="force" type="button" hidden>התנועה כבויה במחשב הזה. להפעיל אותה במעבדה</button>
+
+<div class="rec" id="rec" aria-hidden="true"><i></i><i></i><i></i><i></i><div class="hud"><span class="dot"></span><span>REC</span><span id="recTc">00:00:00</span></div></div>
+<div class="rew" id="rew" aria-hidden="true"><div class="band"></div><div class="hud" id="rewHud">◀◀ REW</div></div>
+<div class="counter" id="counter" aria-hidden="true"></div>
+<div class="cursor-label" id="cursorLabel" aria-hidden="true"></div>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => [...document.querySelectorAll(s)];
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const osReduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let motionOn = !osReduce;
+
+  /* ---------- trails: one canvas, one loop, drawing only while there is something to draw ---------- */
+  const cv = $('#trail'), ctx = cv.getContext('2d');
+  const DPR = Math.min(2, devicePixelRatio || 1);
+  let W = 0, H = 0;
+  const size = () => { W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); };
+  size(); addEventListener('resize', size);
+
+  const ptr = { x: W / 2, y: H / 2, px: W / 2, py: H / 2, moved: 0, down: false };
+  let mode = 0, raf = 0, lastInput = 0;
+
+  // T1 sprite: a soft Prussian blue spot, drawn once
+  const sprite = document.createElement('canvas'); sprite.width = sprite.height = 96;
+  { const g = sprite.getContext('2d'), r = g.createRadialGradient(48, 48, 0, 48, 48, 48);
+    r.addColorStop(0, 'rgba(34,80,121,1)'); r.addColorStop(.45, 'rgba(34,80,121,.55)'); r.addColorStop(1, 'rgba(34,80,121,0)');
+    g.fillStyle = r; g.fillRect(0, 0, 96, 96); }
+  function t1(now) {
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.fillStyle = 'rgba(0,0,0,.028)'; ctx.fillRect(0, 0, W, H);           // the print "develops" away
+    ctx.globalCompositeOperation = 'source-over';
+    const dx = ptr.x - ptr.px, dy = ptr.y - ptr.py, d = Math.hypot(dx, dy);
+    const steps = Math.max(1, Math.ceil(d / 3));
+    const resting = now - lastInput < 1200;
+    if (d > 0 || resting) for (let i = 0; i < steps; i++) {
+      const k = i / steps, x = ptr.px + dx * k, y = ptr.py + dy * k;
+      ctx.globalAlpha = d > 0 ? .05 : .03;                               // lingering exposes deeper
+      ctx.drawImage(sprite, x - 26, y - 26, 52, 52);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // T2 rope: verlet strand of tape, hanging and twisting
+  const N = 26, SEG = 8;
+  const rope = Array.from({ length: N }, () => ({ x: W / 2, y: H / 2, ox: W / 2, oy: H / 2 }));
+  let ropeAlpha = 0, twist = 0;
+  function t2(now) {
+    ctx.clearRect(0, 0, W, H);
+    const head = rope[0];
+    head.x = lerp(head.x, ptr.x, .45); head.y = lerp(head.y, ptr.y, .45);
+    for (let i = 1; i < N; i++) {
+      const p = rope[i], vx = (p.x - p.ox) * .9, vy = (p.y - p.oy) * .9;
+      p.ox = p.x; p.oy = p.y; p.x += vx; p.y += vy + .32;
+    }
+    for (let it = 0; it < 5; it++) for (let i = 1; i < N; i++) {
+      const a = rope[i - 1], b = rope[i], dx = b.x - a.x, dy = b.y - a.y, dist = Math.hypot(dx, dy) || 1, diff = (dist - SEG) / dist;
+      if (i === 1) { b.x -= dx * diff; b.y -= dy * diff; } else { a.x += dx * diff * .5; a.y += dy * diff * .5; b.x -= dx * diff * .5; b.y -= dy * diff * .5; }
+    }
+    const active = now - lastInput < 1400;
+    ropeAlpha = lerp(ropeAlpha, active ? 1 : 0, active ? .2 : .05);
+    twist += Math.hypot(ptr.x - ptr.px, ptr.y - ptr.py) * .012;
+    if (ropeAlpha < .01) return;
+    const L = [], R = [];
+    for (let i = 0; i < N; i++) {
+      const a = rope[Math.max(0, i - 1)], b = rope[Math.min(N - 1, i + 1)];
+      let nx = -(b.y - a.y), ny = b.x - a.x; const nl = Math.hypot(nx, ny) || 1; nx /= nl; ny /= nl;
+      const taper = 1 - i / (N + 4), w = (1.2 + 3.4 * Math.abs(Math.cos(i * .42 + twist))) * taper;
+      L.push([rope[i].x + nx * w, rope[i].y + ny * w]); R.push([rope[i].x - nx * w, rope[i].y - ny * w]);
+    }
+    ctx.globalAlpha = ropeAlpha * .92; ctx.fillStyle = '#2B2520'; ctx.beginPath();
+    L.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+    for (let i = N - 1; i >= 0; i--) ctx.lineTo(R[i][0], R[i][1]);
+    ctx.closePath(); ctx.fill();
+    ctx.globalAlpha = ropeAlpha * .35; ctx.strokeStyle = '#B9A88E'; ctx.lineWidth = .8; ctx.beginPath();
+    L.forEach(([x, y], i) => { const m = [(x + rope[i].x) / 2, (y + rope[i].y) / 2]; i ? ctx.lineTo(m[0], m[1]) : ctx.moveTo(m[0], m[1]); });
+    ctx.stroke(); ctx.globalAlpha = 1;
+  }
+
+  // T3 tracking lines: length is speed, life 450ms
+  const lines = [];
+  function t3(now) {
+    ctx.clearRect(0, 0, W, H);
+    const sp = Math.hypot(ptr.x - ptr.px, ptr.y - ptr.py);
+    if (sp > 1.5 && lines.length < 40) for (let k = 0; k < (sp > 14 ? 2 : 1); k++)
+      lines.push({ x: ptr.x, y: ptr.y + (Math.random() - .5) * 18, len: Math.min(150, 14 + sp * 3.2), t: now });
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const l = lines[i], age = (now - l.t) / 450;
+      if (age >= 1) { lines.splice(i, 1); continue; }
+      const a = (1 - age) * (1 - age), x0 = l.x - l.len / 2;
+      ctx.fillStyle = `rgba(200,55,45,${.35 * a})`; ctx.fillRect(x0 - 2, l.y, l.len, 1);
+      ctx.fillStyle = `rgba(30,140,170,${.35 * a})`; ctx.fillRect(x0 + 2, l.y + .5, l.len, 1);
+      ctx.fillStyle = `rgba(26,25,23,${.55 * a})`; ctx.fillRect(x0, l.y, l.len, 1);
+    }
+  }
+
+  function frame(now) {
+    if (mode === 1) t1(now); else if (mode === 2) t2(now); else if (mode === 3) t3(now);
+    ptr.px = ptr.x; ptr.py = ptr.y;
+    const idle = now - lastInput;
+    const done = (mode === 1 && idle > 4500) || (mode === 2 && idle > 3000 && ropeAlpha < .01) || (mode === 3 && idle > 600 && !lines.length);
+    if (mode && !done) raf = requestAnimationFrame(frame); else { raf = 0; if (mode !== 1) ctx.clearRect(0, 0, W, H); }
+  }
+  const wake = () => { if (!raf && mode && motionOn) raf = requestAnimationFrame(frame); };
+  const onMove = (x, y) => {
+    ptr.x = x; ptr.y = y; lastInput = performance.now(); wake();
+    cursorFollow(x, y);
+  };
+  addEventListener('pointermove', (e) => onMove(e.clientX, e.clientY), { passive: true });
+  addEventListener('touchmove', (e) => { const t = e.touches[0]; if (t) onMove(t.clientX, t.clientY); }, { passive: true });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && raf) { cancelAnimationFrame(raf); raf = 0; } });
+
+  function setTrail(n) {
+    mode = motionOn ? n : 0; ctx.clearRect(0, 0, W, H); lines.length = 0;
+    rope.forEach((p) => { p.x = p.ox = ptr.x; p.y = p.oy = ptr.y; });
+    $$('[data-trail]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.trail === n)));
+    lastInput = performance.now(); wake();
+  }
+  $$('[data-trail]').forEach((b) => b.addEventListener('click', () => setTrail(+b.dataset.trail)));
+
+  /* ---------- S1-S3: service words pop a small thing ---------- */
+  $$('.w').forEach((w) => {
+    const pop = w.querySelector('.pop'); let timer = 0;
+    const show = () => {
+      if (!motionOn) return;
+      pop.classList.remove('on'); void pop.offsetWidth; pop.classList.add('on');
+      clearTimeout(timer); timer = setTimeout(() => pop.classList.remove('on'), 2200);
+    };
+    w.addEventListener('pointerenter', show); w.addEventListener('focus', show); w.addEventListener('click', show);
+    w.addEventListener('pointerleave', () => { clearTimeout(timer); timer = setTimeout(() => pop.classList.remove('on'), 500); });
+  });
+
+  /* ---------- S4: REC after 6 seconds of stillness ---------- */
+  const rec = $('#rec'), recTc = $('#recTc');
+  let recStart = 0, recRaf = 0, idleTimer = 0;
+  const fmt = (ms) => { const s = Math.floor(ms / 1000); return [Math.floor(s / 3600), Math.floor(s / 60) % 60, s % 60].map((v) => String(v).padStart(2, '0')).join(':'); };
+  const recTick = () => { recTc.textContent = fmt(performance.now() - recStart); recRaf = requestAnimationFrame(recTick); };
+  const recOn = () => { if (!motionOn || rec.classList.contains('on')) return; recStart = performance.now(); rec.classList.add('on'); recTick(); };
+  const recOff = () => { rec.classList.remove('on'); cancelAnimationFrame(recRaf); };
+  const anyInput = () => { recOff(); clearTimeout(idleTimer); idleTimer = setTimeout(recOn, 6000); };
+  ['pointermove', 'keydown', 'scroll', 'touchstart', 'wheel'].forEach((t) => addEventListener(t, anyInput, { passive: true }));
+  $('#recNow').addEventListener('click', (e) => { e.stopPropagation(); setTimeout(recOn, 50); });
+
+  /* ---------- S5: rewind to the top ---------- */
+  const rew = $('#rew'), rewHud = $('#rewHud'), band = rew.querySelector('.band');
+  function rewind() {
+    if (!motionOn) { scrollTo(0, 0); return; }
+    const from = scrollY, dur = Math.min(1400, 500 + from * .12), t0 = performance.now();
+    rew.classList.add('on');
+    const step = (now) => {
+      const k = Math.min(1, (now - t0) / dur), e = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+      scrollTo(0, from * (1 - e));
+      band.style.top = `${(now / 3) % 100}%`;
+      rewHud.textContent = `◀◀ REW ${String(Math.round(from * (1 - e) / 8)).padStart(4, '0')}`;
+      if (k < 1) requestAnimationFrame(step);
+      else { rewHud.textContent = '■ STOP 0000'; setTimeout(() => rew.classList.remove('on'), 420); }
+    };
+    requestAnimationFrame(step);
+  }
+  $$('[data-rewind]').forEach((b) => b.addEventListener('click', rewind));
+
+  /* ---------- S6: the tape counter counts the scroll ---------- */
+  const counter = $('#counter');
+  counter.innerHTML = Array.from({ length: 4 }, () => `<span class="d"><span class="col">${[...'0123456789'].map((n) => `<span>${n}</span>`).join('')}</span></span>`).join('');
+  const cols = [...counter.querySelectorAll('.col')];
+  const setCount = () => {
+    const v = String(Math.round(scrollY / 8) % 10000).padStart(4, '0');
+    cols.forEach((c, i) => { c.style.transform = `translateY(${-+v[i] * 10}%)`; });
+  };
+  addEventListener('scroll', () => { if (counter.classList.contains('on')) setCount(); }, { passive: true });
+  $('#counterToggle').addEventListener('click', (e) => {
+    const on = counter.classList.toggle('on'); e.currentTarget.setAttribute('aria-pressed', String(on));
+    e.currentTarget.textContent = on ? 'לכבות את המונה' : 'להדליק את המונה'; setCount();
+  });
+
+  /* ---------- S7: copy the phone, a hand-written label sticks ---------- */
+  const phone = $('#phone'), label = phone.querySelector('.label');
+  phone.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText('0528731808'); } catch (_) { /* the label still shows */ }
+    label.classList.remove('on'); void label.offsetWidth; label.classList.add('on');
+    setTimeout(() => label.classList.remove('on'), 1800);
+  });
+
+  /* ---------- H: ink from the entry side, a label that travels with the pointer ---------- */
+  const k2 = $('#k2');
+  k2.addEventListener('pointerenter', (e) => {
+    const r = k2.getBoundingClientRect();
+    k2.style.setProperty('--x', `${e.clientX - r.left}px`); k2.style.setProperty('--y', `${e.clientY - r.top}px`);
+  });
+  const cl = $('#cursorLabel'); let clOn = false, cx = 0, cy = 0, tx = 0, ty = 0, clRaf = 0;
+  function cursorFollow(x, y) { tx = x + 22; ty = y + 36; if (clOn && !clRaf) clRaf = requestAnimationFrame(clStep); }
+  function clStep() { cx = lerp(cx, tx, .22); cy = lerp(cy, ty, .22); cl.style.translate = `${cx}px ${cy}px`;
+    clRaf = (clOn && Math.hypot(tx - cx, ty - cy) > .3) ? requestAnimationFrame(clStep) : 0; }
+  $$('[data-cursor]').forEach((el) => {
+    el.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'mouse') return; cl.textContent = el.dataset.cursor; cx = tx = e.clientX + 22; cy = ty = e.clientY + 36; cl.style.translate = `${cx}px ${cy}px`; clOn = true; cl.classList.add('on'); });
+    el.addEventListener('pointerleave', () => { clOn = false; cl.classList.remove('on'); });
+  });
+
+  /* ---------- reduced motion: last frames only, unless asked here ---------- */
+  if (osReduce) {
+    const f = $('#force'); f.hidden = false;
+    f.addEventListener('click', () => { motionOn = true; document.documentElement.classList.add('force'); f.hidden = true; setTrail(1); }, { once: true });
+  } else {
+    setTrail(1);
+  }
+  anyInput();
+})();
+</script>
+</body>
+</html>

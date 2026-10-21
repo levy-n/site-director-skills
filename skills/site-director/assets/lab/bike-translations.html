@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>סבב העין: שלושה תרגומים</title>
+<style>
+:root{--cream:#EDE7DA;--paper:#FAF7F0;--ink:#1A1917;--ink2:#4D4942;--tape:#2B2520;--line:rgba(26,25,23,.14)}
+*{box-sizing:border-box;margin:0}
+html{background:var(--cream);color:var(--ink);font-family:"Noto Sans Hebrew",Arial,sans-serif}
+body{background:var(--cream)}
+.intro{min-height:72svh;display:grid;place-content:center;gap:16px;padding:48px 16px;text-align:center;max-width:640px;margin:0 auto}
+h1{font-size:clamp(28px,6vw,48px);font-weight:800;line-height:1.1}
+.intro p,.end p{color:var(--ink2);line-height:1.7}
+.scene{height:300svh;position:relative;border-top:1px solid var(--line)}
+.stage{position:sticky;top:0;height:100svh;display:grid;grid-template-rows:auto 1fr auto;gap:12px;padding:24px 16px;overflow:hidden}
+.tag{font-weight:700;color:var(--ink2);font-size:14px}
+.tag b{color:var(--ink);font-size:20px;margin-inline-end:8px}
+.cap{color:var(--ink2);line-height:1.65;font-size:15px;max-width:52ch}
+.art{display:grid;place-items:center;align-content:center;gap:16px;min-height:0}
+.end{min-height:60svh;display:grid;place-content:center;gap:12px;padding:48px 16px;text-align:center;max-width:640px;margin:0 auto}
+
+/* A: cassette */
+.cass{width:min(88vw,460px);height:auto;overflow:visible}
+.deck{display:flex;gap:24px;align-items:center;font:700 15px/1 ui-monospace,Consolas,monospace;direction:ltr}
+.deck .cnt{background:var(--ink);color:var(--paper);padding:8px 12px;border-radius:4px;letter-spacing:.12em;font-variant-numeric:tabular-nums}
+.deck .lamp{min-width:4.5em;color:var(--ink2)}
+.deck .lamp.on{color:var(--ink)}
+
+/* B: laptop */
+.lap{width:min(80vw,440px);aspect-ratio:1/1;perspective:1300px;perspective-origin:50% 0%;display:grid;align-items:center}
+.rig{position:relative;width:100%;aspect-ratio:16/10;transform-style:preserve-3d;transform:translateY(-14%) rotateX(-16deg)}
+.base{position:absolute;inset-inline:0;top:100%;height:72%;transform-origin:50% 0;transform:rotateX(90deg);background:var(--paper);border:2px solid var(--ink);border-radius:2px 2px 12px 12px}
+.base::after{content:"";position:absolute;inset:14% 8% 40%;border:1.5px solid var(--line);border-radius:4px}
+.lid{position:absolute;inset:0;transform-origin:50% 100%;transform-style:preserve-3d}
+.face{position:absolute;inset:0;border-radius:12px 12px 2px 2px}
+.screen{background:var(--ink);padding:3.5%;overflow:hidden}
+.view{width:100%;height:100%;overflow:hidden;border-radius:3px;background:var(--paper)}
+.site{will-change:transform}
+.band{padding:9% 8%;display:grid;gap:6px}
+.band.k{background:var(--ink)}.band.c{background:var(--cream)}.band.w{background:#fff}
+.ln{height:6px;border-radius:3px;background:var(--ink2);opacity:.55}
+.band.k .ln{background:var(--paper)}
+.ln.h{height:12px;opacity:.9}
+.back{transform:rotateX(180deg);background:var(--ink);display:grid;place-items:center;color:var(--paper);font-weight:800;font-size:clamp(14px,3.6vw,20px)}
+
+/* C: film strip */
+.film{position:relative;width:100%;height:clamp(120px,34vw,190px);overflow:hidden}
+.strip{position:absolute;inset-inline-end:auto;right:0;top:0;height:100%;display:flex;background:var(--ink);padding:22px 0;will-change:transform}
+.strip::before,.strip::after{content:"";position:absolute;inset-inline:0;height:10px;background:repeating-linear-gradient(90deg,var(--paper) 0 10px,transparent 10px 24px);opacity:.85}
+.strip::before{top:6px}.strip::after{bottom:6px}
+.fr{flex:none;height:100%;aspect-ratio:3/2;margin-inline:5px;border-radius:2px;display:grid;place-items:end start;padding:6px;color:var(--paper);font:700 11px/1 ui-monospace,Consolas,monospace}
+.head{position:absolute;top:-6px;bottom:-6px;left:50%;width:2px;background:var(--paper);box-shadow:0 0 0 1px var(--ink)}
+.tc{font:700 clamp(22px,6vw,34px)/1 ui-monospace,Consolas,monospace;direction:ltr;font-variant-numeric:tabular-nums;letter-spacing:.06em}
+@media (prefers-reduced-motion: reduce){html:not(.force) .scene{height:auto}html:not(.force) .stage{position:relative;height:auto;min-height:100svh}}
+.force-btn{position:fixed;bottom:16px;inset-inline:16px;min-height:48px;border:0;border-radius:4px;background:var(--ink);color:var(--paper);font:700 15px/1.3 inherit;font-family:inherit;padding:12px;cursor:pointer;z-index:9}
+</style>
+</head>
+<body>
+
+<header class="intro">
+  <h1>שלושה תרגומים לאופניים של הדוב</h1>
+  <p>מהקוד של Mr. Pandas: כל חלק מחובר למספר אחד של גלילה ביחס קבוע, עם ריכוך כפול.<br>
+  המכונה זזה רק כשהיד זזה. עוצרים, היא נעצרת. גוללים אחורה, היא חוזרת.</p>
+  <p>גללו לאט, ואחר כך מהר, ואחר כך אחורה.</p>
+</header>
+
+<section class="scene" id="sA">
+  <div class="stage">
+    <p class="tag"><b>A</b>הקלטת</p>
+    <div class="art">
+      <svg class="cass" viewBox="0 0 400 252" aria-hidden="true">
+        <rect x="4" y="4" width="392" height="244" rx="16" fill="var(--paper)" stroke="var(--ink)" stroke-width="2"/>
+        <rect x="26" y="20" width="348" height="160" rx="8" fill="none" stroke="var(--line)" stroke-width="2"/>
+        <text x="200" y="50" text-anchor="middle" font-size="15" font-weight="800" fill="var(--ink)" direction="ltr">MediaWave</text>
+        <rect x="92" y="74" width="216" height="96" rx="48" fill="var(--cream)" stroke="var(--ink)" stroke-width="1.5"/>
+        <path id="tape" fill="none" stroke="var(--tape)" stroke-width="3"/>
+        <circle id="packL" cx="146" cy="122" fill="var(--tape)"/>
+        <circle id="packR" cx="254" cy="122" fill="var(--tape)"/>
+        <g id="hubL"></g><g id="hubR"></g>
+        <path d="M118 248 L134 206 H266 L282 248" fill="none" stroke="var(--ink)" stroke-width="2"/>
+        <circle cx="150" cy="228" r="5" fill="none" stroke="var(--ink)" stroke-width="1.5"/>
+        <circle cx="250" cy="228" r="5" fill="none" stroke="var(--ink)" stroke-width="1.5"/>
+      </svg>
+      <div class="deck"><span class="cnt" id="cnt">0000</span><span class="lamp" id="lamp">STOP</span></div>
+    </div>
+    <p class="cap">המרת קלטות. שני הגלגלים מסתובבים עם הגלילה, והסרט עובר מגלגל לגלגל.
+      הגלגל הקטן מסתובב מהר יותר, כמו בקלטת אמיתית. גוללים אחורה, וזה REW.</p>
+  </div>
+</section>
+
+<section class="scene" id="sB">
+  <div class="stage">
+    <p class="tag"><b>B</b>המחשב</p>
+    <div class="art">
+      <div class="lap"><div class="rig">
+        <div class="base"></div>
+        <div class="lid" id="lid">
+          <div class="face screen"><div class="view"><div class="site" id="site">
+            <div class="band k"><div class="ln h" style="width:70%"></div><div class="ln" style="width:50%"></div></div>
+            <div class="band k"><div class="ln" style="width:40%"></div></div>
+            <div class="band c"><div class="ln h" style="width:60%"></div><div class="ln" style="width:85%"></div><div class="ln" style="width:75%"></div></div>
+            <div class="band c"><div class="ln" style="width:65%"></div><div class="ln" style="width:80%"></div></div>
+            <div class="band c"><div class="ln h" style="width:45%"></div><div class="ln" style="width:90%"></div></div>
+            <div class="band w"><div class="ln h" style="width:55%"></div><div class="ln" style="width:70%"></div><div class="ln" style="width:60%"></div></div>
+            <div class="band w"><div class="ln" style="width:85%"></div><div class="ln" style="width:50%"></div></div>
+            <div class="band k"><div class="ln" style="width:35%"></div><div class="ln" style="width:25%"></div></div>
+          </div></div></div>
+          <div class="face back">MediaWave</div>
+        </div>
+      </div></div>
+    </div>
+    <p class="cap">בניית אתרים. המכסה נפתח עם הגלילה, ואז האתר שעל המסך נגלל איתך.
+      זה המחשב שביקשת להחזיר, עם אותו מנגנון של האופניים.</p>
+  </div>
+</section>
+
+<section class="scene" id="sC">
+  <div class="stage">
+    <p class="tag"><b>C</b>פס הפילם</p>
+    <div class="art">
+      <div class="film"><div class="strip" id="strip"></div><div class="head"></div></div>
+      <div class="tc" id="tc">00:00:00:00</div>
+    </div>
+    <p class="cap">עריכת וידאו. פס הפילם עובר מתחת לסמן, וקוד הזמן רץ.
+      כשגוללים מהר הפריימים נמרחים קצת. עוצרים, והכל נעצר.</p>
+  </div>
+</section>
+
+<footer class="end">
+  <p>בשלושתם אותו מנגנון: מספר אחד של גלילה, יחסים קבועים, ריכוך כפול.</p>
+  <p>איזה מהם נושא את הגיבור?</p>
+</footer>
+
+<button class="force-btn" id="force" hidden>התנועה כבויה במחשב הזה. להפעיל אותה בסקיצה</button>
+
+<script>
+(() => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const $ = (id) => document.getElementById(id);
+
+  // A: cassette. Tape is conserved: pack area tracks progress, so the smaller reel turns faster.
+  const R0 = 17, R1 = 40, TAPE = 2600;
+  const hub = (g) => {
+    const c = document.createElementNS(NS, 'circle');
+    c.setAttribute('r', 15); c.setAttribute('fill', 'var(--paper)');
+    c.setAttribute('stroke', 'var(--ink)'); c.setAttribute('stroke-width', 2);
+    g.appendChild(c);
+    for (let k = 0; k < 6; k++) {
+      const t = document.createElementNS(NS, 'rect');
+      t.setAttribute('x', -2); t.setAttribute('y', -15); t.setAttribute('width', 4); t.setAttribute('height', 6);
+      t.setAttribute('fill', 'var(--ink)'); t.setAttribute('transform', `rotate(${k * 60})`);
+      g.appendChild(t);
+    }
+  };
+  hub($('hubL')); hub($('hubR'));
+  const cass = { aL: 0, aR: 0, dL: 0, dR: 0 };
+  function drawCassette(e, de) {
+    const rL = Math.sqrt(R0 * R0 + (1 - e) * (R1 * R1 - R0 * R0));
+    const rR = Math.sqrt(R0 * R0 + e * (R1 * R1 - R0 * R0));
+    $('packL').setAttribute('r', rL.toFixed(2));
+    $('packR').setAttribute('r', rR.toFixed(2));
+    const ds = de * TAPE;
+    cass.aL += (ds / rL) * 57.2958; cass.aR += (ds / rR) * 57.2958;
+    cass.dL = lerp(cass.dL, cass.aL, 0.1); cass.dR = lerp(cass.dR, cass.aR, 0.1);
+    $('hubL').setAttribute('transform', `translate(146 122) rotate(${cass.dL.toFixed(2)})`);
+    $('hubR').setAttribute('transform', `translate(254 122) rotate(${cass.dR.toFixed(2)})`);
+    $('tape').setAttribute('d', `M${146 - rL} 122 L112 212 H288 L${254 + rR} 122`);
+    $('cnt').textContent = String(Math.round(e * 1800)).padStart(4, '0');
+    const lamp = $('lamp');
+    const state = de > 0.0003 ? 'PLAY' : de < -0.0003 ? 'REW' : 'STOP';
+    if (lamp.textContent !== state) { lamp.textContent = state; lamp.classList.toggle('on', state !== 'STOP'); }
+  }
+
+  // B: laptop. The lid opens over the first 35%, then the site on the screen scrolls at a fixed ratio.
+  const lap = { a: -90, y: 0 };
+  const lid = { screen: document.querySelector('.screen'), back: document.querySelector('.back') };
+  function drawLaptop(e) {
+    const open = clamp(e / 0.35);
+    lap.a = lerp(lap.a, -90 + open * 102, 0.1);
+    $('lid').style.transform = `rotateX(${lap.a.toFixed(2)}deg)`;
+    // The camera looks down 16deg: past -74deg the lid shows its back, the logo.
+    const shut = lap.a < -74;
+    lid.screen.style.visibility = shut ? 'hidden' : 'visible';
+    lid.back.style.visibility = shut ? 'visible' : 'hidden';
+    const site = $('site'), view = site.parentElement;
+    const travel = Math.max(0, site.offsetHeight - view.clientHeight);
+    lap.y = lerp(lap.y, clamp((e - 0.4) / 0.6) * travel, 0.1);
+    site.style.transform = `translateY(${(-lap.y).toFixed(1)}px)`;
+  }
+
+  // C: film strip. Frames pass the playhead; blur only while moving fast.
+  const strip = $('strip');
+  for (let i = 0; i < 36; i++) {
+    const f = document.createElement('div');
+    f.className = 'fr';
+    const l = 18 + ((i * 37) % 50);
+    f.style.background = `linear-gradient(${(i * 47) % 180}deg, hsl(36 12% ${l}%), hsl(30 8% ${l + 22}%))`;
+    f.textContent = String(i + 1).padStart(3, '0');
+    strip.appendChild(f);
+  }
+  const film = { x: 0 };
+  const tc = (n) => [Math.floor(n / 90000), Math.floor(n / 1500) % 60, Math.floor(n / 25) % 60, n % 25]
+    .map((v) => String(v).padStart(2, '0')).join(':');
+  function drawFilm(e, de) {
+    const view = strip.parentElement.clientWidth;
+    const travel = Math.max(0, strip.scrollWidth - view);
+    film.x = lerp(film.x, e * travel, 0.1);
+    strip.style.transform = `translateX(${film.x.toFixed(1)}px)`;
+    strip.style.filter = `blur(${Math.min(Math.abs(de) * 120, 2).toFixed(2)}px)`;
+    $('tc').textContent = tc(Math.round(e * 90 * 25));
+  }
+
+  const scenes = [['sA', drawCassette], ['sB', drawLaptop], ['sC', drawFilm]]
+    .map(([id, draw]) => ({ el: $(id), draw, e: 0 }));
+
+  const target = (el) => {
+    const r = el.getBoundingClientRect();
+    return clamp(-r.top / (el.offsetHeight - innerHeight));
+  };
+  function tick() {
+    for (const s of scenes) {
+      const r = s.el.getBoundingClientRect();
+      if (r.bottom < -innerHeight || r.top > innerHeight * 2) continue;
+      const prev = s.e;
+      s.e = lerp(s.e, target(s.el), 0.1); // the one clock, eased once; each part eases again
+      s.draw(s.e, s.e - prev);
+    }
+    requestAnimationFrame(tick);
+  }
+  const start = () => { scenes.forEach((s) => { s.e = 0; s.draw(0, 0); }); requestAnimationFrame(tick); };
+
+  if (reduce) { // the last frame of each, no motion, unless the viewer asks for it here
+    lap.a = 12; scenes.forEach((s) => s.draw(1, 0));
+    $('lid').style.transform = 'rotateX(12deg)';
+    const btn = $('force');
+    btn.hidden = false;
+    btn.addEventListener('click', () => {
+      document.documentElement.classList.add('force');
+      btn.hidden = true; lap.a = -90; lap.y = 0;
+      start();
+    }, { once: true });
+    return;
+  }
+  start();
+})();
+</script>
+</body>
+</html>

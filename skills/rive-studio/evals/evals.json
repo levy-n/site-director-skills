@@ -1,0 +1,58 @@
+{
+  "skill_name": "rive-studio",
+  "evals": [
+    {
+      "id": 0,
+      "name": "quick-cta-next-he",
+      "prompt": "אני רוצה כפתור 'קבעו שיעור ניסיון' מונפש ב-Rive לדף הנחיתה של סטודיו יוגה קטן ברחובות. האתר בנוי ב-Next.js עם Tailwind, בעברית. שיהיה ייחודי ולא עוד כפתור קופצני.",
+      "expected_output": "One quick intake round (at most 4 Hebrew questions, recommended option first, linted payload), two motion sketches shown before the concept question, a contract with a view model (hover, press, busy or status, a trigger) and no text inside the canvas, a Next.js client component that keeps a real DOM button with the Hebrew label, lazy-loads the .riv, pauses off screen, honours reduced motion, and avoids the reflexes (elastic everything, liquid button, scale plus glow).",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "mascot-android-compose",
+      "prompt": "אני בונה אפליקציית אנדרואיד ב-Kotlin עם Jetpack Compose ללימוד אנגלית לילדים בכיתות א-ב. אני רוצה דמות מונפשת ב-Rive שמגיבה כשהילד עונה נכון או לא נכון, ומעודדת אותו כשהוא מתלבט. תעזור לי לעצב ולבנות אותה.",
+      "expected_output": "Full intake (rounds 1-4), three sketches from different forcing constraints, a character built from the product's own world (not a generic blob), a mood enum and reaction triggers in the contract, concern and help instead of mockery on wrong answers, an attention budget, reduced-motion behaviour, Compose integration code using the current Android runtime API with data binding, haptic tick synced to the impact frame, and a verification plan.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "existing-riv-astro",
+      "prompt": "המעצבת שלי שלחה לי קובץ hero.riv. תחבר אותו לאתר Astro שלי כך שיגיב לעכבר ולגלילה, ותוודא שזה לא פוגע בביצועים.",
+      "expected_output": "Runs the probe on the file before asking anything, asks only mapping questions the probe cannot answer, writes the contract from the real names, integrates through a light custom element or island that loads only when visible, maps pointer and scroll to view model numbers, reserves the aspect ratio, pauses off screen, handles reduced motion and RTL, and verifies with per-state captures and the size budget.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "mcp-setup",
+      "prompt": "תחבר לי את Rive ל-Claude Code דרך MCP כדי שתוכל לבנות לי קבצים ישירות ב-Editor.",
+      "expected_output": "Follows build-mcp.md: states the prerequisites the user completes personally (desktop Editor install from rive.app/downloads, sign-in, a file with an artboard open), asks before changing Claude Code configuration, gives `claude mcp add --transport http --scope user rive http://127.0.0.1:9791/mcp`, says to start Claude Code after the Editor and verify with /mcp, never uses the retired /sse URL, and offers the Rive CLI path (asking before running its PowerShell installer) plus the build sheet as fallbacks.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "autopilot-loader-law",
+      "prompt": "תחליט אתה לגמרי: אני צריך אנימציית טעינה ייחודית ב-Rive לטופס יצירת קשר באתר של משרד עורכי דין בתל אביב. האתר ב-React.",
+      "expected_output": "Autopilot: no questions, recommended options recorded under Assumed with evidence, precise and quiet personality, a loader that exits at any frame into success or error, not a gradient ring spinner, status enum in the contract, reduced motion handled, React integration, and a closing note naming the assumptions that shaped the result most.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "no-tools-honesty",
+      "prompt": "Change the hover color of the button in public/rive/cta.riv to our brand green and make the press animation snappier.",
+      "expected_output": "Probes the file first if possible; with no Rive CLI and no Editor MCP available it does not claim to have edited the .riv, writes exact editor steps (build sheet format) with the contract names, labels the result Unverified with the remaining check, and offers to connect the CLI or MCP so the change can be made and verified.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "name": "site-director-persistent-object-astro",
+      "prompt": "site-director כבר כתב את תיק העולם, יומן ההחלטות והסטוריבורד לאתר של מאפייה בוטיק (Astro, מנוע התנועה של pattern-breaker). בשורה של האובייקט הקבוע בסטוריבורד כתוב שהבצק משנה מצב בכל פרק: לישה, התפחה, אפייה. תבנה את זה ב-Rive.",
+      "expected_output": "Reads design/world-dossier.rtl.md, design/design-decisions.rtl.md and design/storyboard.rtl.md in round 0 and does not ask what they settle (platform, role, drivers, states, reduced motion, style); records those answers under Inferred with the file and row as the source; uses the storyboard row and its dossier items as the Material of every sketch, with sketches that differ in gesture and timing only (no second concept lab); the contract has a chapter enum whose values are the storyboard chapter ids (knead, proof, bake) and a 0-1 story progress number; the integration writes them from ScrollTrigger on the engine clock (no own requestAnimationFrame loop), leaves the clock and rests the file (state machine paused) when values settle, from the first frame on; strict reduced motion swaps states instantly and never scrubs; a generated static SVG rest frame from the same numbers as the RML, late mount after load and idle near the viewport; captures at 1440x900, 1440x700 and 390x844; every Decisions row in MOTION-BRIEF names its dossier item.",
+      "files": [
+        "evals/files/site-director-bakery/design/world-dossier.rtl.md",
+        "evals/files/site-director-bakery/design/design-decisions.rtl.md",
+        "evals/files/site-director-bakery/design/storyboard.rtl.md"
+      ]
+    }
+  ]
+}

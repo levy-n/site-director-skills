@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {
+      "header": "Smoke test",
+      "question": "Which line wrapped first in the preview pane?",
+      "multiSelect": false,
+      "options": [
+        {
+          "label": "Nothing wrapped",
+          "description": "The pane fits 60+ columns on this host.",
+          "preview": "....5....10...15...20...25...30...35...40...45...50...55...60\n|<- if this line wraps, the budget is under 60 cols\n....5....10...15...20...25...30...35...40\n|<- 40-col line\nשורה בעברית בלי מסגרת\n|abc שלום def|  <- Hebrew between borders\n+--------------------------------------+"
+        },
+        {
+          "label": "The 60-col line",
+          "description": "Budget is between 40 and 60 columns."
+        },
+        {
+          "label": "The 40-col line",
+          "description": "Budget is under 40 columns; shrink previews."
+        }
+      ]
+    }
+  ]
+}

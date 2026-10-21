@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>selftest · engine API</title>
+<style>
+  body { margin: 0; font: 18px/1.6 Arial, sans-serif; color: #15171a; }
+  section { min-height: 120vh; padding: 40px 24px; box-sizing: border-box; }
+  #pinme { min-height: 60vh; background: #e8ecf2; }
+  .theme-bg { position: fixed; inset: 0; z-index: -1; }
+  .theme-bg i { position: absolute; inset: 0; opacity: 0; }
+  .theme-bg i.on { opacity: 1; }
+  .theme-bg i[data-t="light"] { background: #f6f7f9; }
+  .theme-bg i[data-t="dark"] { background: #d9dde3; }
+</style>
+</head>
+<body>
+<!-- Checks for the engine API that selftest.mjs --browser drives: the one clock (onFrame on and off,
+     ticker listeners back to baseline), damp, addCleanup, onViewportResize, the content-height watch
+     (one refresh per change, never answering its own refresh), autoRaf forced false, lagSmoothing
+     restored, timers and the load listener cleared on destroy, themeLayers cleanup (also on an
+     engine that is already destroyed), and the motion:preference rebuild. The page writes window.__api; selftest resizes the viewport and flips
+     prefers-reduced-motion from outside, then reads the counters. -->
+<div class="theme-bg" aria-hidden="true"><i data-t="light"></i><i data-t="dark"></i></div>
+<main>
+  <section data-theme="light"><h1>בדיקת מנוע התנועה</h1><p>עמוד בדיקה. אין כאן עיצוב, רק מדידות.</p></section>
+  <section data-theme="dark"><div id="pinme"><p>אזור מוצמד: כל רענון מאריך אותו ב-100 פיקסלים.</p></div></section>
+  <section data-theme="light" id="tail"><p>סוף העמוד.</p></section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
+<script type="module">
+  import { createMotionEngine, themeLayers } from '../../assets/engine/motion-engine.js';
+  const libs = { gsap, ScrollTrigger, Lenis };
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const api = { errors: [] };
+  window.__api = api;
+
+  // ---- instrumentation, installed before any engine exists --------------------------------------
+  // Ticker listeners added and removed from here on (GSAP's own, added at load, are not tracked).
+  const ticker = new Set();
+  const add0 = gsap.ticker.add.bind(gsap.ticker);
+  const remove0 = gsap.ticker.remove.bind(gsap.ticker);
+  gsap.ticker.add = (fn, once, prioritize) => { const r = add0(fn, once, prioritize); ticker.add(once ? r : fn); return r; };
+  gsap.ticker.remove = (fn, i) => { ticker.delete(fn); return remove0(fn, i); };
+  const lagCalls = [];
+  const lag0 = gsap.ticker.lagSmoothing.bind(gsap.ticker);
+  gsap.ticker.lagSmoothing = (...a) => { lagCalls.push(a); return lag0(...a); };
+  // requestAnimationFrame calls whose callback is a given Lenis instance's own raf (autoRaf loop)
+  let rafWatch = null;
+  let rafHits = 0;
+  const raf0 = window.requestAnimationFrame.bind(window);
+  window.requestAnimationFrame = (cb) => { if (rafWatch && cb === rafWatch) rafHits++; return raf0(cb); };
+  // 'load' listeners added and removed (the engine adds one; destroy() must remove it)
+  const loadAdds = [];
+  const loadRemoves = [];
+  const addEL0 = window.addEventListener.bind(window);
+  const removeEL0 = window.removeEventListener.bind(window);
+  window.addEventListener = (type, fn, opt) => { if (type === 'load') loadAdds.push(fn); return addEL0(type, fn, opt); };
+  window.removeEventListener = (type, fn, opt) => { if (type === 'load') loadRemoves.push(fn); return removeEL0(type, fn, opt); };
+  let refreshes = 0;
+  ScrollTrigger.addEventListener('refresh', () => { refreshes++; });
+  const pageBaseline = ticker.size;
+  const appendBlock = (h) => { const d = document.createElement('div'); d.style.height = `${h}px`; document.querySelector('main').append(d); return d; };
+
+  async function run() {
+    // ---- 1. autoRaf control: a bare Lenis with autoRaf:true runs its own rAF loop (proves the probe)
+    const control = new Lenis({ autoRaf: true });
+    rafWatch = control.raf; rafHits = 0;
+    await wait(300);
+    api.controlOwnRaf = rafHits;
+    control.destroy();
+    rafWatch = null;
+
+    // ---- 2. throwaway engine: watchContent off, pending refresh and load listener cleared ---------
+    const loadAddsBefore = loadAdds.length;
+    const e0 = createMotionEngine(libs, { smooth: false, watchContent: false });
+    const e0Load = loadAdds.slice(loadAddsBefore);
+    await e0.fontsReady;
+    await wait(300);
+    refreshes = 0;
+    const extra = appendBlock(600);
+    await wait(1200);
+    api.watchOffRefreshes = refreshes;
+    extra.remove();
+    await wait(100);
+    refreshes = 0;
+    window.dispatchEvent(new Event('scroll')); // a scroll just now: safeRefresh must wait 350 ms
+    e0.safeRefresh();
+    e0.destroy();
+    await wait(900);
+    api.pendingRefreshAfterDestroy = refreshes;
+    api.loadListenerRemoved = e0Load.length > 0 && e0Load.every((fn) => loadRemoves.includes(fn));
+    api.tickerAfterE0 = ticker.size - pageBaseline;
+    // themeLayers on an engine that is already destroyed (a late route script): its cleanup runs at
+    // once and must also cancel the text-colour flip that its first pick() scheduled. Called from a
+    // function-valued end, that is inside another trigger's refresh, where ScrollTrigger skips the new
+    // trigger's own first refresh (and its onRefresh), so only that explicit pick() schedules the flip.
+    let lateThemeCalls = 0;
+    const host = ScrollTrigger.create({ start: 0, end: () => { if (!lateThemeCalls++) themeLayers(e0); return '+=100'; } });
+    await wait(400);
+    host.kill();
+    api.lateThemeCalled = lateThemeCalls > 0;
+    api.lateThemeFlips = [...document.body.classList].filter((c) => c.startsWith('t-')).length;
+    api.lateThemeTriggers = ScrollTrigger.getAll().length;
+
+    // ---- 3. the engine under test ------------------------------------------------------------
+    const prefCalls = [];
+    api.prefCalls = prefCalls;
+    let cleanupRuns = 0;
+    let engine = createMotionEngine(libs, { lenis: { autoRaf: true }, onPreferenceChange: (reduce) => prefCalls.push(reduce) });
+    window.__engine = engine;
+    themeLayers(engine);
+    engine.addCleanup(() => { cleanupRuns++; });
+    api.motionOn = !engine.REDUCE && Boolean(engine.lenis);
+    api.autoRafOption = engine.lenis ? engine.lenis.options.autoRaf : null;
+    rafWatch = engine.lenis ? engine.lenis.raf : null; rafHits = 0;
+    await wait(300);
+    api.engineOwnRaf = rafHits;
+    rafWatch = null;
+    api.lagSetToZero = JSON.stringify(lagCalls[lagCalls.length - 1]) === '[0]';
+    // a pin whose length grows by 100 px on every refresh: each refresh changes the page height,
+    // so a watch that answered its own refresh would loop forever
+    let pinLen = 300;
+    engine.scene(() => {
+      ScrollTrigger.create({ trigger: '#pinme', pin: true, start: 'top top', end: () => `+=${(pinLen += 100)}` });
+    });
+    await engine.fontsReady;
+    await wait(1000);
+
+    // ---- 4. onFrame: one dispatcher on the ticker while jobs exist, none after -----------------
+    const before = new Set(ticker);
+    const added = () => [...ticker].filter((f) => !before.has(f)).length;
+    let a = 0;
+    let b = 0;
+    let args = null;
+    const offA = engine.onFrame((time, dt, frame) => { a++; args = [time, dt, frame]; });
+    const offB = engine.onFrame(() => { b++; });
+    api.onFrameTwoJobsOneListener = added() === 1 && engine.frameJobCount === 2;
+    await wait(250);
+    api.onFrameRan = a > 3 && b > 3;
+    api.onFrameArgs = Boolean(args) && args.every((v) => typeof v === 'number') && Number.isInteger(args[2]) && args[1] > 0 && args[1] < 1000;
+    offA();
+    offA(); // twice is harmless
+    api.onFrameOneLeft = added() === 1 && engine.frameJobCount === 1;
+    offB();
+    api.onFrameBackToBaseline = added() === 0 && engine.frameJobCount === 0;
+    const aStopped = a;
+    await wait(100);
+    api.onFrameStopsCalling = a === aStopped;
+    let selfRuns = 0;
+    const selfOff = engine.onFrame(() => { selfRuns++; if (selfRuns === 3) selfOff(); });
+    await wait(250);
+    api.onFrameSelfRemoval = selfRuns === 3 && added() === 0;
+    const same = () => {};
+    const off1 = engine.onFrame(same);
+    const off2 = engine.onFrame(same);
+    const twice = engine.frameJobCount === 2;
+    off1();
+    const once = engine.frameJobCount === 1 && added() === 1;
+    off2();
+    api.onFrameSameFunctionTwice = twice && once && added() === 0;
+
+    // ---- 5. damp -----------------------------------------------------------------------------
+    let dampMatch = null;
+    const offD = engine.onFrame(() => {
+      const r = Math.min(gsap.ticker.deltaRatio(60), 3);
+      dampMatch = Math.abs(engine.damp(0.18) - (1 - Math.pow(1 - 0.18, r))) < 1e-12;
+      offD();
+    });
+    await wait(100);
+    const ratio0 = gsap.ticker.deltaRatio;
+    gsap.ticker.deltaRatio = () => 1;
+    const at60 = engine.damp(0.18);
+    gsap.ticker.deltaRatio = () => 10;
+    const capped = engine.damp(0.5);
+    gsap.ticker.deltaRatio = () => 2;
+    const at30 = engine.damp(0.5);
+    gsap.ticker.deltaRatio = ratio0;
+    api.damp = { matchesFormula: dampMatch, at60: Math.abs(at60 - 0.18) < 1e-12, at30: Math.abs(at30 - 0.75) < 1e-12, cappedAt3: Math.abs(capped - 0.875) < 1e-12 };
+
+    // ---- 6. content-height watch -------------------------------------------------------------
+    refreshes = 0;
+    await wait(1000);
+    api.idleRefreshes = refreshes; // 0: the pin's growth did not start a loop
+    refreshes = 0;
+    const h0 = document.body.scrollHeight;
+    const t0 = performance.now();
+    appendBlock(800);
+    while (refreshes === 0 && performance.now() - t0 < 2000) await wait(10);
+    api.refreshLatencyMs = refreshes ? Math.round(performance.now() - t0) : null;
+    await wait(1500);
+    api.refreshesAfterAppend = refreshes; // 1: the refresh grew the page again and was not answered
+    api.heightGrowth = document.body.scrollHeight - h0; // > 800: proves the refresh changed the height
+    // an animated height (20 frames, 10 px each): one refresh for the whole burst, not one per frame
+    refreshes = 0;
+    const grow = appendBlock(0);
+    for (let i = 1; i <= 20; i++) { grow.style.height = `${i * 10}px`; await new Promise((r) => requestAnimationFrame(r)); }
+    await wait(1200);
+    api.refreshesAfterBurst = refreshes;
+
+    // ---- 7. viewport resize: counters read and driven from selftest ---------------------------
+    api.resize = { viewport: 0, width: 0 };
+    engine.onViewportResize(() => { api.resize.viewport++; });
+    engine.onWidthResize(() => { api.resize.width++; });
+
+    // ---- 8. OS preference change: the documented boot path rebuilds the engine ----------------
+    api.prefEvents = [];
+    api.rebuilds = [];
+    api.afterDestroy = [];
+    addEL0('motion:preference', (e) => {
+      api.prefEvents.push(e.detail.reduce);
+      const old = engine;
+      const runsBefore = cleanupRuns;
+      old.destroy();
+      let lateCleanup = false;
+      old.addCleanup(() => { lateCleanup = true; }); // after destroy: runs at once
+      const offLate = old.onFrame(() => {});         // after destroy: refused
+      offLate();
+      api.afterDestroy.push({
+        tickerAdded: ticker.size - pageBaseline,
+        triggers: ScrollTrigger.getAll().length,
+        frameJobs: old.frameJobCount,
+        lastLag: JSON.stringify(lagCalls[lagCalls.length - 1]),
+        cleanupRanOnce: cleanupRuns === runsBefore + (runsBefore === 0 ? 1 : 0),
+        lateCleanup,
+        classes: document.documentElement.className.trim(),
+      });
+      engine = createMotionEngine(libs, { onPreferenceChange: (reduce) => prefCalls.push(reduce) });
+      window.__engine = engine;
+      api.rebuilds.push({ REDUCE: engine.REDUCE, lenis: Boolean(engine.lenis), ready: document.documentElement.classList.contains('motion-ready'), reduced: document.documentElement.classList.contains('motion-reduced') });
+    });
+    window.__finish = () => {
+      engine.destroy();
+      return { tickerAdded: ticker.size - pageBaseline, triggers: ScrollTrigger.getAll().length, classes: document.documentElement.className.trim(), left: [...ticker].map((f) => f.name || '(anonymous)') };
+    };
+  }
+  run().then(() => { api.done = true; }, (e) => { api.errors.push(String(e && e.stack || e)); api.done = true; });
+</script>
+</body>
+</html>

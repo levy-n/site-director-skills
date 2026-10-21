@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moves gallery · pattern-breaker</title>
+<!--
+  The moves gallery runs the engine and the core recipes together, so each recipe is tested in a
+  real page (film it with scroll-film, measure it with motion-audit). The styling is deliberately
+  plain: this page tests mechanics, not taste. Never use it as a visual reference.
+  Query flags: ?dir=ltr flips direction · ?at=<px> jumps to a scroll position.
+-->
+<script>
+  if (new URLSearchParams(location.search).get('dir') === 'ltr') { document.documentElement.dir = 'ltr'; document.documentElement.lang = 'en'; }
+</script>
+<style>
+  :root { --ground: #f2f2f0; --ink: #161616; --muted: #6b6b6b; --line: #16161626; --signal: #2f5bd3; --gm: clamp(16px, 3vw, 40px); }
+  body.t-dark { --ground: #121212; --ink: #f0f0f0; --muted: #a0a0a0; --line: #f0f0f026; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: auto; }
+  html.lenis, html.lenis body { height: auto; }
+  .lenis.lenis-stopped { overflow: clip; }
+  /* no transition on body colour: the theme flip is instant, only the .theme-bg layers fade (see themeLayers) */
+  body { margin: 0; font: 18px/1.7 system-ui, sans-serif; color: var(--ink); background: transparent; }
+  .theme-bg { position: fixed; inset: 0; z-index: -1; }
+  .theme-bg i { position: absolute; inset: 0; opacity: 0; transition: opacity .35s; }
+  .theme-bg i.on { opacity: 1; }
+  .theme-bg [data-t="light"] { background: #f2f2f0; }
+  .theme-bg [data-t="dark"] { background: #121212; }
+  section { padding: 18vh var(--gm); position: relative; }
+  .label { font: 12px/1 ui-monospace, monospace; color: var(--muted); display: block; margin-block-end: 1.2rem; }
+  h1, h2 { margin: 0; line-height: 1.05; font-weight: 800; }
+  h1 { font-size: clamp(44px, 8vw, 128px); max-width: 14ch; }
+  h2 { font-size: clamp(32px, 5vw, 76px); max-width: 16ch; }
+  p { max-width: 60ch; }
+  .line { overflow: clip; }
+  /* E-01 heading decorations sit at the inline start: if a split leaves the heading ltr, they jump to the left */
+  .e01 { padding-inline-start: .4em; border-inline-start: .12em solid var(--signal); }
+  .e01::after { content: ""; display: block; inline-size: 2.5em; block-size: .1em; margin-block-start: .25em; background: var(--signal); }
+  /* E-03 marker: a pseudo-element scaled by --u */
+  .mark { position: relative; white-space: nowrap; }
+  .mark::after { content: ""; position: absolute; inset-inline: 0; bottom: .06em; height: .12em; background: var(--signal); transform-origin: var(--mark-origin, right); transform: scaleX(var(--u, 1)); }
+  html[dir="ltr"] .mark::after { --mark-origin: left; }
+  /* E-02 clip reveal */
+  .clip { overflow: hidden; aspect-ratio: 16 / 9; max-width: 900px; background: #ddd; }
+  .clip img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  /* E-04 ink fill */
+  .ink .w { opacity: var(--o, 1); transition: opacity .1s; }
+  /* holds: a tall wrapper + a sticky stage (no pin) */
+  .hold { position: relative; padding: 0; }
+  .stage { position: sticky; top: 0; height: 100svh; overflow: clip; display: grid; align-content: center; padding-inline: var(--gm); }
+  /* H-01 text swap */
+  .swap { position: relative; height: 3.3em; }
+  .swap p { position: absolute; inset: 0; margin: 0; font-size: clamp(26px, 3.4vw, 52px); line-height: 1.1; font-weight: 700; max-width: 22ch; }
+  .idx { font: 13px/1 ui-monospace, monospace; color: var(--muted); margin-block-start: 1rem; direction: ltr; unicode-bidi: isolate; }
+  /* H-02 horizontal track */
+  .track { display: flex; gap: 24px; width: max-content; will-change: transform; }
+  .card { width: min(70vw, 420px); aspect-ratio: 4 / 5; background: #d8d8d4; display: grid; place-items: end start; padding: 20px; font-weight: 700; font-size: 28px; }
+  body.t-dark .card { background: #262626; }
+  /* H-03 frame sequence */
+  .seq canvas { width: 100%; height: 100%; display: block; }
+  .seq .stage { padding: 0; }
+  .seq .cap { position: absolute; inset-inline-start: var(--gm); bottom: 10vh; color: #fff; font-size: clamp(24px, 3vw, 44px); font-weight: 700; max-width: 18ch; opacity: 0; transition: opacity .3s; text-shadow: 0 2px 12px #0008; }
+  .seq .cap.show { opacity: 1; }
+  /* H-07 rolling counter */
+  .steps { display: grid; grid-template-columns: minmax(120px, 1fr) 3fr; gap: 4vw; }
+  .counter { position: sticky; top: 30vh; height: 1em; font-size: clamp(80px, 12vw, 180px); font-weight: 800; line-height: 1; overflow: hidden; align-self: start; direction: ltr; }
+  .counter span { display: block; height: 1em; }
+  .step { min-height: 60vh; padding-block: 10vh; border-block-start: 1px solid var(--line); }
+  /* V-01 marquee */
+  .marquee { overflow: hidden; padding-block: 8vh; }
+  .marquee .row { display: flex; width: max-content; font-size: clamp(40px, 6vw, 96px); font-weight: 800; white-space: nowrap; }
+  /* each item carries its own trailing space, so half the row is exactly one period (a flex gap would make the loop jump by half a gap) */
+  .marquee .row span { padding-inline-end: 48px; }
+  /* C-01 follow preview */
+  .list a { display: flex; justify-content: space-between; padding: 22px 0; border-block-end: 1px solid var(--line); color: inherit; text-decoration: none; font-size: clamp(24px, 3vw, 40px); font-weight: 700; }
+  .preview { position: fixed; top: 0; left: 0; width: 320px; aspect-ratio: 4 / 3; pointer-events: none; z-index: 5; clip-path: inset(100% 0 0 0); background: #ccc center / cover; }
+  /* N-01 CSS scroll-driven reveal, progressive enhancement */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .n01 { animation: n01-rise linear both; animation-timeline: view(); animation-range: entry 0% cover 30%; }
+      @keyframes n01-rise { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: none; } }
+    }
+  }
+  .num { font-size: clamp(64px, 10vw, 160px); font-weight: 800; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
+  footer { padding: 20vh var(--gm); }
+</style>
+</head>
+<body class="t-light">
+<div class="theme-bg" aria-hidden="true"><i data-t="light" class="on"></i><i data-t="dark"></i></div>
+
+<main>
+  <section data-theme="light" id="hero">
+    <span class="label">E-03 marker draw (the H1 itself paints at first frame: it is the LCP element)</span>
+    <h1>גלריית מהלכים שבודקת את <span class="mark">המכניקה</span> ולא את הטעם.</h1>
+    <p>כל סקשן כאן מריץ מתכון אחד מתוך references/moves-recipes.md, עם הגרסה שלו למובייל ולהפחתת תנועה.</p>
+  </section>
+
+  <section data-theme="light">
+    <span class="label">E-01 masked line rise (secondary heading, onSplit + autoSplit; its border and bar stay on the reading-start side, also after a resize re-splits it)</span>
+    <h2 class="e01">שורות שעולות מאחורי הקצה של עצמן, אחרי שהפונט נטען.</h2>
+  </section>
+
+  <section data-theme="light">
+    <span class="label">E-02 clip reveal with inner settle</span>
+    <div class="clip e02"><img src="frames/f040.jpg" alt="פריים מתוך רצף לדוגמה" width="480" height="270"></div>
+  </section>
+
+  <section data-theme="light">
+    <span class="label">E-04 word ink-fill (scrubbed)</span>
+    <p class="ink e04" style="font-size: clamp(24px, 3vw, 42px); line-height: 1.35; max-width: 24ch;">משפט שנקרא לאט מקבל את הזמן שלו: כל מילה מתמלאת בדיו בקצב הגלילה, והמילה האחרונה מסומנת.</p>
+  </section>
+
+  <div class="hold h01" data-theme="dark" style="height: 300svh;">
+    <div class="stage">
+      <span class="label">H-01 text-swap stage (sticky, no pin)</span>
+      <div class="swap">
+        <p>משפט ראשון על הבמה.</p>
+        <p>משפט שני מחליף אותו.</p>
+        <p>והשלישי סוגר את הרעיון.</p>
+      </div>
+      <div class="idx">01 / 03</div>
+    </div>
+  </div>
+
+  <div class="hold h02" data-theme="dark">
+    <div class="stage">
+      <span class="label">H-02 horizontal track (sticky + translate, reading direction aware)</span>
+      <div class="track">
+        <div class="card">01</div><div class="card">02</div><div class="card">03</div><div class="card">04</div><div class="card">05</div><div class="card">06</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hold seq h03" data-theme="dark">
+    <div class="stage">
+      <canvas aria-hidden="true"></canvas>
+      <div class="cap" data-at="0.15">פריים אחרי פריים, בקצב של מי שגולל.</div>
+      <div class="cap" data-at="0.65">והתנועה נעצרת כשהגלילה נעצרת.</div>
+    </div>
+  </div>
+
+  <section data-theme="light">
+    <span class="label">H-07 rolling step counter (active step from position)</span>
+    <div class="steps h07">
+      <div class="counter" aria-hidden="true"><div class="roll"><span>1</span><span>2</span><span>3</span></div></div>
+      <ol style="list-style: none; padding: 0; margin: 0;">
+        <li class="step"><h2>שלב ראשון</h2><p>המספר בצד מתגלגל לשלב שחוצה את אמצע המסך.</p></li>
+        <li class="step"><h2>שלב שני</h2><p>גם בגלילה מהירה המספר תמיד תואם את השלב שעל המסך.</p></li>
+        <li class="step"><h2>שלב שלישי</h2><p>השלב הפעיל מחושב מהמיקום בכל עדכון, לא מאירועי כניסה ויציאה.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="marquee v01" data-theme="light" aria-label="מרקי מהירות">
+    <span class="label" style="padding-inline: var(--gm);">V-01 velocity marquee · V-02 velocity skew</span>
+    <div class="row" aria-hidden="true"><span>גללו כדי להאיץ</span><span>·</span><span>גללו כדי להאיץ</span><span>·</span><span>גללו כדי להאיץ</span><span>·</span><span>גללו כדי להאיץ</span><span>·</span></div>
+  </section>
+
+  <section data-theme="light">
+    <span class="label">E-05 count to a real number (the number is in the HTML)</span>
+    <div class="num e05" data-n="312">312</div>
+    <p>בוגרים מאז 2019, לפי רשימת הקורסים. המספר האמיתי כתוב ב-HTML, והספירה מתחילה מאפס רק כש-JS רץ.</p>
+  </section>
+
+  <section data-theme="light">
+    <span class="label">C-01 follow preview with velocity tilt (fine pointers only)</span>
+    <nav class="list c01">
+      <a href="#hero" data-img="frames/f010.jpg"><span>פרויקט ראשון</span><span class="idx">01</span></a>
+      <a href="#hero" data-img="frames/f030.jpg"><span>פרויקט שני</span><span class="idx">02</span></a>
+      <a href="#hero" data-img="frames/f055.jpg"><span>פרויקט שלישי</span><span class="idx">03</span></a>
+    </nav>
+  </section>
+
+  <section data-theme="light" class="n01-wrap">
+    <span class="label">N-01 CSS scroll-driven reveal (no JavaScript)</span>
+    <h2 class="n01">כאן אין JavaScript בכלל: רק animation-timeline: view().</h2>
+  </section>
+</main>
+
+<footer data-theme="dark">
+  <span class="label">end of gallery</span>
+  <p>מצלמים: node scripts/scroll-film.mjs · מודדים: node scripts/motion-audit.mjs</p>
+</footer>
+
+<div class="preview" aria-hidden="true"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
+<script type="module">
+  import { createMotionEngine, themeLayers } from '../engine/motion-engine.js';
+
+  const engine = createMotionEngine({ gsap: window.gsap, ScrollTrigger: window.ScrollTrigger, SplitText: window.SplitText, Lenis: window.Lenis });
+  const { scene, REDUCE, FINE, DIR } = engine;
+  // Every move runs inside scene(), and returns a cleanup for what gsap.context cannot revert on its
+  // own (listeners, ticker callbacks, DOM edits), so engine.destroy() leaves the page as it was.
+  scene(() => { themeLayers(engine); });
+
+  // E-01 + E-03: lines rise from their masks, then the marker draws under one phrase.
+  // E-03 on the hero: transform only, the H1 text is painted from the first frame.
+  scene(({ gsap }) => {
+    if (REDUCE) return;
+    const mark = document.querySelector('#hero .mark');
+    gsap.set(mark, { '--u': 0 });
+    gsap.to(mark, { '--u': 1, duration: 0.7, ease: 'power2.inOut', delay: 0.6 });
+  });
+  // E-01 on a secondary heading: onSplit builds and returns the animation, so a width change re-splits and rebuilds it.
+  scene(({ gsap }) => {
+    if (REDUCE) return;
+    engine.splitLines(document.querySelector('.e01'), {
+      onSplit: (self) => gsap.from(self.lines, { yPercent: 110, duration: 1, stagger: 0.09, ease: 'power3.out',
+        scrollTrigger: { trigger: self.elements[0], start: 'top 80%', once: true } }),
+    });
+  });
+
+  // E-02: clip reveal triggered at the image's centre, image settles from 1.15.
+  scene(({ gsap }) => {
+    if (REDUCE) return;
+    const box = document.querySelector('.e02');
+    gsap.timeline({ scrollTrigger: { trigger: box, start: 'center 85%', once: true } })
+      .fromTo(box, { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 1.1, ease: 'power3.inOut' }, 0)
+      .fromTo(box.querySelector('img'), { scale: 1.15 }, { scale: 1, duration: 1.5, ease: 'power3.out' }, 0.05);
+  });
+
+  // E-04: words fill with ink as the paragraph scrolls through.
+  scene(({ gsap }) => {
+    if (REDUCE) return;
+    const p = document.querySelector('.e04');
+    const text = p.textContent;
+    const words = text.trim().split(/\s+/);
+    p.textContent = '';
+    const spans = words.map((w, i) => { const s = document.createElement('span'); s.className = 'w'; s.textContent = w; p.append(s); if (i < words.length - 1) p.append(' '); return s; });
+    gsap.set(spans, { '--o': 0.25 });
+    gsap.to(spans, { '--o': 1, stagger: 0.3, ease: 'none', scrollTrigger: { trigger: p, start: 'top 80%', end: 'bottom 45%', scrub: 0.4 } });
+    return () => { p.textContent = text; };
+  });
+
+  // H-01: three sentences swap on a sticky stage; the index is a real sequence.
+  scene(({ gsap }) => {
+    const wrap = document.querySelector('.h01');
+    const lines = [...wrap.querySelectorAll('.swap p')];
+    const idx = wrap.querySelector('.idx');
+    if (REDUCE) { wrap.style.height = 'auto'; wrap.querySelector('.stage').style.position = 'static'; lines.forEach((l) => { l.style.position = 'static'; }); wrap.querySelector('.swap').style.height = 'auto'; idx.hidden = true; return; }
+    gsap.set(lines.slice(1), { autoAlpha: 0, y: 40 });
+    const tl = engine.holdTimeline(wrap, { id: 'h01', scrub: 0.5, onUpdate: (self) => { idx.textContent = `0${Math.min(lines.length, Math.floor(self.progress * lines.length) + 1)} / 0${lines.length}`; } });
+    lines.forEach((l, i) => {
+      if (!i) return;
+      tl.to(lines[i - 1], { autoAlpha: 0, y: -40, duration: 0.35, ease: 'power2.in' }, i)
+        .to(l, { autoAlpha: 1, y: 0, duration: 0.45, ease: 'power2.out' }, i + 0.3);
+    });
+    tl.to({}, { duration: 0.6 });
+  });
+
+  // H-02: the track travels in the reading direction while the stage stays put.
+  scene(({ gsap, ScrollTrigger }) => {
+    const wrap = document.querySelector('.h02');
+    const stage = wrap.querySelector('.stage');
+    const track = wrap.querySelector('.track');
+    const distance = () => Math.max(0, track.scrollWidth - stage.clientWidth + 80);
+    const size = () => { wrap.style.height = REDUCE ? 'auto' : `${distance() + innerHeight}px`; };
+    if (REDUCE) { stage.style.position = 'static'; stage.style.height = 'auto'; track.style.flexWrap = 'wrap'; track.style.width = 'auto'; return; }
+    size();
+    ScrollTrigger.addEventListener('refreshInit', size);
+    engine.holdTimeline(wrap, { id: 'h02', scrub: 0.5 }).fromTo(track, { x: 0 }, { x: () => DIR * distance(), duration: 1 });
+    return () => { ScrollTrigger.removeEventListener('refreshInit', size); wrap.style.height = ''; };
+  });
+
+  // H-03: frame sequence on a canvas; always draws the nearest loaded frame, never a blank.
+  scene(({ ScrollTrigger }) => {
+    const wrap = document.querySelector('.h03');
+    const canvas = wrap.querySelector('canvas');
+    const caps = [...wrap.querySelectorAll('.cap')];
+    const N = 72, PX = innerWidth < 900 ? 11 : 14;
+    const frames = new Array(N);
+    const ctx = canvas.getContext('2d', { alpha: false });
+    const url = (i) => `frames/f${String(i + 1).padStart(3, '0')}.jpg`;
+    let last = null;
+    const draw = (img) => {
+      if (!img) return;
+      last = img;
+      const cw = canvas.width, ch = canvas.height, ir = img.naturalWidth / img.naturalHeight;
+      let w = cw, h = cw / ir; if (h < ch) { h = ch; w = ch * ir; }
+      ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
+    };
+    const resize = () => { const dpr = Math.min(devicePixelRatio || 1, 2); canvas.width = Math.round(innerWidth * dpr); canvas.height = Math.round(innerHeight * dpr); draw(last); };
+    const nearest = (f) => { for (let d = 0; d < N; d++) { if (frames[f - d]) return frames[f - d]; if (frames[f + d]) return frames[f + d]; } return null; };
+    resize();
+    engine.onWidthResize(resize);
+    if (REDUCE) {
+      wrap.style.height = 'auto'; wrap.querySelector('.stage').style.position = 'static';
+      const poster = new Image(); poster.onload = () => draw(poster); poster.src = url(N - 1);
+      caps.forEach((c) => { c.classList.add('show'); c.style.position = 'static'; c.style.color = 'inherit'; c.style.textShadow = 'none'; });
+      return;
+    }
+    wrap.style.height = `${N * PX + innerHeight}px`;
+    let want = 0;
+    const load = (i) => new Promise((res) => { const im = new Image(); im.onload = () => { frames[i] = im; if (i === want) draw(im); res(); }; im.onerror = res; im.src = url(i); });
+    // Load early (two screens ahead), the first frame first, then the rest in order.
+    ScrollTrigger.create({ trigger: wrap, start: 'top 250%', once: true, onEnter: async () => { await load(0); draw(frames[0]); for (let i = 1; i < N; i++) load(i); } });
+    ScrollTrigger.create({ trigger: wrap, start: 'top top', end: 'bottom bottom', onUpdate: (self) => {
+      want = Math.min(N - 1, Math.floor(self.progress * N));
+      const img = nearest(want);
+      if (img && img !== last) draw(img);
+      caps.forEach((c) => c.classList.toggle('show', self.progress >= Number(c.dataset.at) && self.progress < Number(c.dataset.at) + 0.35));
+    } });
+  });
+
+  // H-07: active step computed from position on every update, so fast scrolls never show a stale number.
+  scene(({ gsap, ScrollTrigger }) => {
+    const box = document.querySelector('.h07');
+    const steps = [...box.querySelectorAll('.step')];
+    const roll = box.querySelector('.roll');
+    let cur = -1;
+    const show = (k) => { if (k === cur) return; cur = k; gsap.to(roll, { yPercent: (-100 * k) / steps.length, duration: REDUCE ? 0 : 0.6, ease: 'power3.inOut', overwrite: true }); };
+    const sync = () => { const line = innerHeight * 0.5; let k = 0; steps.forEach((s, i) => { if (s.getBoundingClientRect().top <= line) k = i; }); show(k); };
+    ScrollTrigger.create({ trigger: box, start: 'top bottom', end: 'bottom top', onUpdate: sync, onRefresh: sync });
+    sync();
+  });
+
+  // V-01 + V-02: a loop at a slow base speed; scroll velocity speeds it up and skews it, then decays.
+  scene(({ gsap, ScrollTrigger }) => {
+    const sec = document.querySelector('.v01');
+    const row = sec.querySelector('.row');
+    if (REDUCE) return; // one copy only: nothing moves, so nothing is shown (or read out) twice
+    const html0 = row.innerHTML;
+    row.insertAdjacentHTML('beforeend', html0); // two copies (the row is aria-hidden): the loop wraps at -50%
+    // Two identical copies: travelling half the row's width lands exactly on the start again.
+    const loop = gsap.fromTo(row, { xPercent: 0 }, { xPercent: 50 * DIR, duration: 30, ease: 'none', repeat: -1 });
+    const skew = gsap.quickTo(row, 'skewX', { duration: 0.5, ease: 'power3' });
+    let on = false;
+    ScrollTrigger.create({ trigger: sec, start: 'top bottom', end: 'bottom top', onToggle: (self) => { on = self.isActive; on ? loop.play() : loop.pause(); } });
+    const tick = () => {
+      if (!on) return;
+      const v = gsap.utils.clamp(-3000, 3000, engine.getVelocity());
+      loop.timeScale(1 + Math.abs(v) / 900);
+      skew(gsap.utils.clamp(-6, 6, v / 400));
+    };
+    gsap.ticker.add(tick);
+    return () => { gsap.ticker.remove(tick); row.innerHTML = html0; };
+  });
+
+  // E-05: the real number is in the HTML; count from zero only when it is about to be read.
+  scene(({ gsap, ScrollTrigger }) => {
+    const el = document.querySelector('.e05');
+    const n = Number(el.dataset.n);
+    if (REDUCE) return;
+    const original = el.textContent;
+    const o = { v: 0 };
+    let tw = null; // created in onEnter, outside the scene's context: killed by the cleanup below
+    el.textContent = '0';
+    ScrollTrigger.create({ trigger: el, start: 'top 90%', once: true, onEnter: () => { tw = gsap.to(o, { v: n, duration: 1.4, ease: 'power3.out', onUpdate: () => { el.textContent = String(Math.round(o.v)); } }); } });
+    return () => { tw?.kill(); el.textContent = original; }; // never leave a false number behind
+  });
+
+  // C-01: a preview follows the pointer and tilts with its velocity; fine pointers only.
+  scene(({ gsap }) => {
+    if (!FINE || REDUCE) return;
+    const list = document.querySelector('.c01');
+    const prev = document.querySelector('.preview');
+    const xTo = gsap.quickTo(prev, 'x', { duration: 0.6, ease: 'power3' });
+    const yTo = gsap.quickTo(prev, 'y', { duration: 0.6, ease: 'power3' });
+    const rTo = gsap.quickTo(prev, 'rotation', { duration: 0.5, ease: 'power3' });
+    let lx = null, vx = 0, shown = false;
+    const onMove = (e) => {
+      if (lx !== null) vx += (e.clientX - lx - vx) * 0.35;
+      lx = e.clientX;
+      xTo(e.clientX + 24); yTo(e.clientY - prev.offsetHeight / 2);
+    };
+    const tick = () => { if (!shown) return; vx *= 0.88; rTo(gsap.utils.clamp(-10, 10, vx * 0.5)); };
+    const onEnter = (e) => {
+      prev.style.backgroundImage = `url(${e.currentTarget.dataset.img})`;
+      if (!shown) { shown = true; gsap.fromTo(prev, { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.6, ease: 'power4.out', overwrite: 'auto' }); }
+    };
+    const onLeave = () => { shown = false; lx = null; vx = 0; rTo(0); gsap.to(prev, { clipPath: 'inset(0% 0% 100% 0%)', duration: 0.35, ease: 'power3.in', overwrite: 'auto' }); };
+    const rows = list.querySelectorAll('a');
+    list.addEventListener('pointermove', onMove);
+    list.addEventListener('pointerleave', onLeave);
+    rows.forEach((a) => a.addEventListener('pointerenter', onEnter));
+    gsap.ticker.add(tick);
+    return () => {
+      list.removeEventListener('pointermove', onMove);
+      list.removeEventListener('pointerleave', onLeave);
+      rows.forEach((a) => a.removeEventListener('pointerenter', onEnter));
+      gsap.ticker.remove(tick);
+      gsap.killTweensOf(prev); // the open/close tweens start in handlers, outside the context
+      prev.removeAttribute('style');
+    };
+  });
+
+  window.__engine = engine; // for debugging in the console
+</script>
+</body>
+</html>

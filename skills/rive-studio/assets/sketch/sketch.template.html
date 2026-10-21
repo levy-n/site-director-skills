@@ -1,0 +1,148 @@
+<!doctype html>
+<!-- rive-studio motion sketch. Copy to design/rive/<piece>/sketches/<letter>.html and replace every REPLACE block.
+     Disposable prototype: proves timing, easing, choreography and states before anything is built in Rive.
+     No network, no libraries. Shapes are SVG; motion uses the Web Animations API through to() and loop(). -->
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sketch REPLACE-LETTER</title>
+<style>
+  :root {
+    /* REPLACE with the project's tokens */
+    --bg: #f6f7f9; --fg: #15171c; --muted: #6b7280; --accent: #2457ff; --panel: #ffffff; --line: #e3e6eb;
+  }
+  :root[data-theme="dark"] { --bg: #0f1115; --fg: #eef0f4; --muted: #9aa3af; --panel: #171a21; --line: #2a2f39; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.45 system-ui, sans-serif; }
+  header { padding: 14px 16px 6px; }
+  h1 { margin: 0; font-size: 17px; }
+  .idea { margin: 4px 0 0; color: var(--muted); }
+  .stage { margin: 10px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+           aspect-ratio: 4 / 3; display: grid; place-items: center; outline: none; touch-action: manipulation; }
+  .stage:focus-visible { box-shadow: 0 0 0 3px var(--accent); }
+  .stage svg { width: 72%; height: auto; overflow: visible; }
+  .stage svg * { transform-box: fill-box; transform-origin: center; }
+  [dir="rtl"] .mirror { transform: scaleX(-1); }       /* wrap direction-bearing groups in <g class="mirror"> */
+  .controls { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px; }
+  button, select { font: inherit; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line);
+                   background: var(--panel); color: var(--fg); cursor: pointer; }
+  button[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  table { margin: 10px 16px 18px; border-collapse: collapse; width: calc(100% - 32px); font-size: 13px; }
+  td, th { border-bottom: 1px solid var(--line); padding: 5px 6px; text-align: start; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  .ltr { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title"></h1>
+  <p class="idea" id="idea"></p>
+</header>
+
+<div class="stage" id="stage" tabindex="0" aria-label="sketch stage">
+  <!-- REPLACE: the concept's shapes. Use the brand's own geometry (logo paths, traced objects).
+       Give every animated part an id. Wrap direction-bearing parts in <g class="mirror">. -->
+  <svg viewBox="0 0 200 150" role="img" aria-label="sketch">
+    <rect id="body" x="40" y="45" width="120" height="60" rx="14" fill="var(--accent)"/>
+    <circle id="dot" cx="100" cy="75" r="9" fill="var(--panel)"/>
+  </svg>
+</div>
+
+<div class="controls" id="states" aria-label="states"></div>
+<div class="controls" style="margin-top:6px">
+  <button id="replay">replay</button>
+  <select id="speed" aria-label="speed"><option value="1">1x</option><option value="2">0.5x</option><option value="4">0.25x</option></select>
+  <button id="reduced" aria-pressed="false">reduced motion</button>
+  <button id="dir" aria-pressed="true">RTL</button>
+  <button id="theme" aria-pressed="false">dark</button>
+</div>
+
+<table aria-label="timing">
+  <thead><tr><th>beat</th><th>ms</th><th>easing</th><th>what moves</th></tr></thead>
+  <tbody id="timings"></tbody>
+</table>
+
+<script>
+/* ---------- engine (keep as is) ---------- */
+const R = { slow: 1, reduced: matchMedia('(prefers-reduced-motion: reduce)').matches, state: 'idle' };
+const $ = (s) => document.querySelector(s);
+const EASE = {                                   // personality curves from motion-craft.md section 2
+  out: 'cubic-bezier(0.2, 0, 0, 1)', inOut: 'cubic-bezier(0.65, 0, 0.35, 1)',
+  in: 'cubic-bezier(0.3, 0, 0.8, 0.15)', back: 'cubic-bezier(0.34, 1.56, 0.64, 1)', linear: 'linear',
+};
+// Animate el from wherever it is now to target. Interruptible: running animations are committed first.
+function to(el, target, { ms = 200, ease = EASE.out, delay = 0 } = {}) {
+  el.getAnimations().forEach((a) => { try { a.commitStyles(); } catch (e) {} a.cancel(); });
+  const cs = getComputedStyle(el), from = {};
+  for (const k of Object.keys(target)) from[k] = cs[k];
+  const dur = R.reduced ? Math.min(ms, 150) * (('opacity' in target) ? 1 : 0) : ms * R.slow;
+  const a = el.animate([from, target], { duration: dur, delay: R.reduced ? 0 : delay * R.slow, easing: ease, fill: 'forwards' });
+  a.finished.then(() => { try { a.commitStyles(); a.cancel(); } catch (e) {} }).catch(() => {});
+  return a;
+}
+// Seamless loop that the next to() call interrupts from its current frame. Disabled under reduced motion.
+function loop(el, keyframes, { ms = 1000, ease = EASE.linear } = {}) {
+  if (R.reduced) return null;
+  el.getAnimations().forEach((a) => { try { a.commitStyles(); } catch (e) {} a.cancel(); });
+  return el.animate(keyframes, { duration: ms * R.slow, iterations: Infinity, easing: ease });
+}
+function go(name) {
+  R.state = name;
+  document.querySelectorAll('#states button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.s === name)));
+  SKETCH.states[name]?.();
+}
+function boot() {
+  $('#title').textContent = SKETCH.title; $('#idea').textContent = SKETCH.idea;
+  const box = $('#states'); box.innerHTML = '';
+  Object.keys(SKETCH.states).forEach((s) => {
+    const b = document.createElement('button'); b.textContent = s; b.dataset.s = s; b.onclick = () => go(s); box.append(b);
+  });
+  $('#timings').innerHTML = SKETCH.timings.map((t) =>
+    `<tr><td>${t.beat}</td><td><span class="ltr">${t.ms}</span></td><td><span class="ltr">${t.ease}</span></td><td>${t.what}</td></tr>`).join('');
+  const st = $('#stage');                       // pointer and keyboard drive the same states as the buttons
+  st.onpointerenter = (e) => { if (e.pointerType === 'mouse') go('hover'); };
+  st.onpointerleave = () => go('idle');
+  st.onpointerdown = () => go('pressed');
+  st.onpointerup = (e) => go(e.pointerType === 'mouse' ? 'hover' : 'idle');
+  st.onfocus = () => SKETCH.states.focus && go('focus');
+  st.onblur = () => go('idle');
+  st.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go('pressed'); setTimeout(() => go('idle'), 160 * R.slow); } };
+  go('idle');
+}
+$('#replay').onclick = () => { const s = R.state; go('idle'); setTimeout(() => go(s), 60); };
+$('#speed').onchange = (e) => { R.slow = Number(e.target.value); };
+$('#reduced').onclick = (e) => { R.reduced = !R.reduced; e.target.setAttribute('aria-pressed', String(R.reduced)); go(R.state); };
+$('#reduced').setAttribute('aria-pressed', String(R.reduced));
+$('#dir').onclick = (e) => { const rtl = document.documentElement.dir !== 'rtl'; document.documentElement.dir = rtl ? 'rtl' : 'ltr'; e.target.setAttribute('aria-pressed', String(rtl)); };
+$('#theme').onclick = (e) => { const d = document.documentElement.dataset.theme !== 'dark'; document.documentElement.dataset.theme = d ? 'dark' : 'light'; e.target.setAttribute('aria-pressed', String(d)); };
+
+/* ---------- REPLACE: the concept ---------- */
+const body = $('#body'), dot = $('#dot');
+const SKETCH = {
+  title: 'A: REPLACE name',
+  idea: 'REPLACE: the one sentence this motion says, specific to the brand.',
+  timings: [                                     // becomes the Motion spec section of the contract
+    { beat: 'hover', ms: '0-150', ease: 'out', what: 'body lifts 2px, dot drifts toward the pointer side' },
+    { beat: 'press', ms: '0-90', ease: 'out', what: 'body compresses 6% vertically, 2% wider' },
+    { beat: 'loading', ms: '1100 loop', ease: 'inOut', what: 'dot travels the width and back' },
+    { beat: 'success', ms: '0-450', ease: 'back', what: 'dot grows into a check-shaped pause, settles' },
+    { beat: 'error', ms: '0-360', ease: 'out', what: '3 small shakes, max 5px, then rest' },
+  ],
+  states: {
+    idle:    () => { to(body, { transform: 'translateY(0) scale(1, 1)' }, { ms: 220 }); to(dot, { transform: 'translateX(0) scale(1)', opacity: 1 }, { ms: 220 }); },
+    hover:   () => { to(body, { transform: 'translateY(-2px) scale(1, 1)' }, { ms: 150 }); to(dot, { transform: 'translateX(6px) scale(1)' }, { ms: 180 }); },
+    pressed: () => { to(body, { transform: 'translateY(0) scale(1.02, 0.94)' }, { ms: 90 }); },
+    focus:   () => { to(body, { transform: 'translateY(-1px) scale(1, 1)' }, { ms: 150 }); },
+    loading: () => { to(body, { transform: 'translateY(0) scale(1, 1)' }, { ms: 150 });
+                     loop(dot, [{ transform: 'translateX(-40px)' }, { transform: 'translateX(40px)' }, { transform: 'translateX(-40px)' }], { ms: 1100, ease: EASE.inOut }); },
+    success: () => { to(dot, { transform: 'translateX(0) scale(2.2)' }, { ms: 450, ease: EASE.back }); },
+    error:   () => { to(dot, { transform: 'translateX(0) scale(1)' }, { ms: 120 });
+                     if (!R.reduced) body.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' },
+                       { transform: 'translateX(-3px)' }, { transform: 'translateX(0)' }], { duration: 360 * R.slow, easing: EASE.out }); },
+  },
+};
+boot();
+</script>
+</body>
+</html>

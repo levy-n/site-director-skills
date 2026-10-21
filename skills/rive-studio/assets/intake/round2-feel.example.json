@@ -1,0 +1,53 @@
+{
+  "questions": [
+    {
+      "header": "אופי תנועה",
+      "question": "איך התנועה צריכה להרגיש?",
+      "multiSelect": false,
+      "options": [
+        {
+          "label": "מדויק ושקט (מומלץ)",
+          "description": "מהיר, בלי קפיצה, נגמר לפני שמרגישים אותו. מתאים למשפט, רפואה, פיננסים ו-B2B.",
+          "preview": "PRECISE / QUIET\npress    80-120 ms\nstate   150-220 ms\nenter   250-350 ms\nease    out (0.2, 0, 0, 1)\n1 |     .........\n  |   ..\n  |  .\n  | .\n0 |.____________ t\novershoot  none\nfits  law, health, finance, b2b"
+        },
+        {
+          "label": "חי ושובב",
+          "description": "קפיצי, עם overshoot קטן ומעיכה במגע. מתאים לאוכל, ילדים, חינוך ואפליקציות צרכנים.",
+          "preview": "LIVELY / PLAYFUL\npress   100-150 ms\nstate   220-350 ms\nenter   350-550 ms\nease    spring, then settle\n1 |     .'.  ......\n  |    .   ''\n  |   .\n  |  .\n0 |..___________ t\novershoot  5-15% then settle\nsquash     on press and landing\nfits  food, kids, edu, consumer"
+        },
+        {
+          "label": "יוקרתי וקולנועי",
+          "description": "איטי ורך, עומק ושכבות. מתאים לנדל\"ן, אופנה ואירוח.",
+          "preview": "LUXURIOUS / CINEMATIC\npress   120-180 ms\nstate   300-450 ms\nenter   500-900 ms\nease    in-out (0.65, 0, 0.35, 1)\n1 |          .....\n  |        .\n  |      .\n  |    .\n0 |....__________ t\ndepth   2-3 layers, slow parallax\nfits  hospitality, fashion, realty"
+        },
+        {
+          "label": "טכני ואנרגטי",
+          "description": "חד ומהיר, נתונים זזים בקו ישר. מתאים ל-SaaS, דשבורדים וספורט.",
+          "preview": "TECHNICAL / ENERGETIC\npress    60-100 ms\nstate   120-200 ms\nenter   200-320 ms\nease    sharp out, linear data\n1 |   ...........\n  |  .\n  | .\n0 |.____________ t\novershoot  none or 2-4%\nfits  saas, dashboards, sport"
+        }
+      ]
+    },
+    {
+      "header": "עוצמה",
+      "question": "כמה מקום Rive תופס בחוויה?",
+      "multiSelect": false,
+      "options": [
+        {
+          "label": "מאוזן (מומלץ)",
+          "description": "משוב בכל הרכיבים ורגע חתימה אחד. תקציב עד 150KB.",
+          "preview": "INTENSITY  balanced\nfeedback   all controls\nsignature  1 moment\ncharacter  optional, reacts only\nidle       still, rare cues\nriv files  1-2, <= 150 KB total\nperf risk  low"
+        },
+        {
+          "label": "עדין",
+          "description": "רק משוב ברכיבים המרכזיים, בלי רגע חתימה. הכי בטוח לביצועים, עד 60KB.",
+          "preview": "INTENSITY  subtle\nfeedback   key controls only\nsignature  none\nidle       still\nriv files  1, <= 60 KB\nperf risk  lowest"
+        },
+        {
+          "label": "מופע",
+          "description": "הסצנה או הדמות הם החוויה עצמה. דורש בדיקות ביצועים במובייל ותמונת poster.",
+          "preview": "INTENSITY  showpiece\nfeedback   all controls\nsignature  the scene is the page\ncharacter  full expression set\nidle       alive, then settles\nriv files  1-3, <= 600 KB + assets\nperf risk  medium-high\nneeds      mobile perf test, poster"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "skill_name": "pattern-breaker",
+  "evals": [
+    {
+      "id": 0,
+      "name": "greenfield-he-ceramics",
+      "prompt": "אני צריך אתר ללקוחה שלי, נועה אבידן, שיש לה סטודיו קרמיקה בפרדס חנה-כרכור. היא מעבירה סדנאות אובניים חד-פעמיות לקבוצות של עד 6 אנשים (280 ₪ למשתתף, שלוש שעות), קורס שבועי של 8 מפגשים (1,450 ₪), ומכינה בהזמנה כלי שולחן בעבודת יד למסעדות. היא עובדת מאז 2016 מצריף עץ בחצר הבית, ושורפת את הכלים בתנור חשמלי ב-1,240 מעלות. אין לה עדיין צילומים מקצועיים, רק תמונות מהטלפון. טלפון ווואטסאפ: 054-6218840, אינסטגרם: @noa.avidan.clay. אני רוצה שהאתר לא ייראה כמו עוד אתר AI או תבנית, שתהיה בו חוויית גלילה מדהימה שמפתיעה לאורך כל הדרך, ושיעבוד מעולה בנייד.",
+      "expected_output": "A complete Hebrew RTL one-page site for the studio: a concept specific to this studio (clay, kiln, the wooden hut) rather than a template, real facts only (no invented testimonials or stats), 2-4 signature scroll moments with mobile and reduced-motion versions, content visible without JS, smooth scrolling with no layout shift, design docs (brief, concept, scroll score).",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "greenfield-en-coffee",
+      "prompt": "Build a one-page site for Halfmoon Roasters, a two-person specialty coffee roastery in Haifa's lower city (Wadi Salib). Shira and Karim roast twice a week on a restored 1962 Probat UG-15, sell 250 g bags (58-74 ILS) through WhatsApp orders with Thursday delivery in Haifa, and supply 14 cafes. They publish a roast log for every batch: origin, roast date, development time. WhatsApp: +972-52-7140693. I want it to be memorable and feel nothing like the usual AI-built coffee site, with a scroll experience people talk about. It has to be great on phones.",
+      "expected_output": "A complete English LTR one-page site: a concept specific to this roastery (the 1962 Probat, the roast log, Wadi Salib) rather than coffee-template cliches, 2-4 signature scroll moments with mobile and reduced-motion versions, real facts only, content visible without JS, smooth scroll without layout shift, design docs.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "upgrade-he-accounting",
+      "prompt": "יש לי אתר של משרד רואי חשבון, הקובץ מצורף (evals/files/slop-accounting/index.html). הוא נראה גנרי ומשעמם, כמו תבנית של AI. תשדרג אותו שיהיה חי, יפה ומקצועי, בלי לאבד את מה שעובד: התפריט והעוגנים, טופס יצירת הקשר והשירותים. פרטים אמיתיים על המשרד: אבי לוי, רואה חשבון, ברחובות, משנת 2009, שלושה אנשי צוות, מתמחים בעצמאים ובעסקים קטנים. טלפון 08-9461273, וואטסאפ 054-7720913.",
+      "expected_output": "The same page upgraded: anchors (#services, #about, #testimonials, #contact), the contact form fields and the three services preserved; generic patterns removed (purple gradients, blur blobs, emoji headings, AOS fade-up everywhere, stock avatars); invented proof (500+ / 99.9% / pravatar testimonials) flagged or removed rather than kept or replaced with new invented proof; a diagnosis document; one or more signature moments; content visible without JS; reduced-motion safe.",
+      "files": [
+        "evals/files/slop-accounting/index.html"
+      ]
+    }
+  ]
+}

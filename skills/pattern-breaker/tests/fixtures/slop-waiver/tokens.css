@@ -1,0 +1,8 @@
+/* Fixture for selftest.mjs: second-order signals and how they are waived. Not a design. */
+:root {
+  /* slop-ok:klein-blue decision:D2 the survey stakes on site are painted this blue */
+  --accent: #002FA7;
+  /* slop-ok: cream-paper the client's paper stock (a plain waiver: ignored for second-order signals) */
+  --paper: #FAF8F0;
+  --texture: url(img/grain.png);
+}

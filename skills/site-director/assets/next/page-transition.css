@@ -1,0 +1,120 @@
+/* page-transition.css (Next.js 16.4 + React 19.3): the geometric RTL page mask (move T-07) for
+ * PageTransition.tsx. Import it once, globally, from app/(frontend)/layout.tsx.
+ *
+ * React's <ViewTransition> puts the class named for the navigation's type on the entering and the
+ * leaving snapshots: enter 'mw-wipe-rtl' / 'mw-wipe-ltr', exit 'mw-hold-fwd' / 'mw-hold-back'.
+ * The old and the new page overlap: the new page is revealed by a diagonal clip-path edge that
+ * travels right to left on forward navigation (the Hebrew reading direction) and left to right on
+ * back; the old page drifts 5% ahead of the edge underneath. 0.8 s.
+ *
+ * The header is anchored: give it style={{ viewTransitionName: 'site-header' }} in the layout.
+ * The 0.8 s duration and the old/new overlap follow Heron AI's page transition (Bearplus, Codrops
+ * case study, 12 Oct 2026); the geometry and the code are our own. Same keyframes as the Astro file.
+ */
+
+:root {
+  --mw-vt-duration: 0.8s;
+  /* a slow start and a long settle: the edge reads as drawn, not slid */
+  --mw-vt-ease: cubic-bezier(0.77, 0, 0.18, 1);
+  /* horizontal run of the diagonal edge, as a share of the width */
+  --mw-vt-slant: 18%;
+}
+
+/* The transition overlay never swallows clicks or hovers. */
+::view-transition {
+  pointer-events: none;
+}
+
+/* The header stays put above the wipe. */
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(site-header) {
+  display: none;
+}
+::view-transition-new(site-header) {
+  animation: none;
+}
+
+/* The entering page's group above the leaving one (enter and exit are separate groups; check the
+   z-order in Safari). mix-blend-mode: normal replaces the UA crossfade's plus-lighter blending. */
+::view-transition-group(.mw-wipe-rtl),
+::view-transition-group(.mw-wipe-ltr) {
+  z-index: 2;
+}
+::view-transition-new(.mw-wipe-rtl) {
+  animation: mw-wipe-rtl var(--mw-vt-duration) var(--mw-vt-ease) both;
+  mix-blend-mode: normal;
+}
+::view-transition-new(.mw-wipe-ltr) {
+  animation: mw-wipe-ltr var(--mw-vt-duration) var(--mw-vt-ease) both;
+  mix-blend-mode: normal;
+}
+/* The entering page has no old snapshot to fade, the leaving page no new one. */
+::view-transition-old(.mw-wipe-rtl),
+::view-transition-old(.mw-wipe-ltr),
+::view-transition-new(.mw-hold-fwd),
+::view-transition-new(.mw-hold-back) {
+  animation: none;
+}
+::view-transition-old(.mw-hold-fwd) {
+  --mw-drift: -5%;
+  animation: mw-drift var(--mw-vt-duration) var(--mw-vt-ease) both;
+  mix-blend-mode: normal;
+}
+::view-transition-old(.mw-hold-back) {
+  --mw-drift: 5%;
+  animation: mw-drift var(--mw-vt-duration) var(--mw-vt-ease) both;
+  mix-blend-mode: normal;
+}
+
+/* Same geometry as the Astro file: a 4-vertex polygon whose diagonal side travels without turning;
+   off screen at "from", the whole screen at "to"; equal vertex counts so the polygons interpolate. */
+@keyframes mw-wipe-rtl {
+  from {
+    clip-path: polygon(100% 0, calc(100% + var(--mw-vt-slant)) 0, calc(100% + var(--mw-vt-slant)) 100%, calc(100% + var(--mw-vt-slant)) 100%);
+  }
+  to {
+    clip-path: polygon(calc(0% - var(--mw-vt-slant)) 0, calc(100% + var(--mw-vt-slant)) 0, calc(100% + var(--mw-vt-slant)) 100%, 0% 100%);
+  }
+}
+@keyframes mw-wipe-ltr {
+  from {
+    clip-path: polygon(0% 0, calc(0% - var(--mw-vt-slant)) 0, calc(0% - var(--mw-vt-slant)) 100%, calc(0% - var(--mw-vt-slant)) 100%);
+  }
+  to {
+    clip-path: polygon(calc(100% + var(--mw-vt-slant)) 0, calc(0% - var(--mw-vt-slant)) 0, calc(0% - var(--mw-vt-slant)) 100%, 100% 100%);
+  }
+}
+@keyframes mw-drift {
+  to {
+    translate: var(--mw-drift) 0;
+  }
+}
+
+/* The GSAP curtain (curtain.ts), used only where the wipe above cannot run. Hidden at rest (no
+   events either); while it covers the screen it takes the clicks, so a second link cannot start a
+   second navigation underneath. Its colour comes from the site's tokens. */
+.mw-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: var(--mw-curtain-bg, #111);
+  visibility: hidden;
+  clip-path: inset(0 0 0 100%);
+}
+
+/* Strict reduced motion: no wipe, no drift; an instant swap. React adds no rule of its own. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+html[data-motion="off"]::view-transition-group(*),
+html[data-motion="off"]::view-transition-old(*),
+html[data-motion="off"]::view-transition-new(*) {
+  animation: none !important;
+}

@@ -1,0 +1,144 @@
+{
+  "skill_name": "site-director",
+  "evals": [
+    {
+      "id": 1,
+      "name": "new-bakery-site-he",
+      "prompt": "לקוחה חדשה: מאפיית מחמצת קטנה בשכונה בחיפה (שם בדוי לבדיקה: 'הבצק של רוני'). היא אופה כל לילה ופותחת ב-6:00, מוכרת כיכרות מחמצת, לחמניות ועוגות שמרים, ומקבלת הזמנות לשישי בוואטסאפ: 050-1234567. אין לה אתר, רק אינסטגרם עם תמונות מהטלפון. אני רוצה אתר ברמת Site of the Day, שלא ייראה כמו תבנית, שיעבוד מעולה בנייד, ושהיא תוכל לעדכן בעצמה מה נשאר היום.",
+      "expected_output": "The full pipeline for a new client site, run from site-director: stage 0 with a logged stack decision, the business stage routed to mediawave-landing-page, a mandatory creative-direction stage that produces the three artifacts from the bakery's own world, fonts picked by Nati from rendered specimens, a hero idea board, then a hero plus one chapter prototype captured in the screenshot matrix, with no invented facts and no long dashes.",
+      "files": [],
+      "expectations": [
+        "Stage 0 logs D1 with a reason before any design work: Astro static with client-content-editor, because she edits a few fields such as what is left today.",
+        "mediawave-landing-page is invoked by name for discovery and the proposal; the five world questions are added and 10-20 workplace photos are requested before stage 2 starts.",
+        "No inspiration site or idea bank (Dribbble, Awwwards, Pinterest, pattern-breaker's banks) is opened during stage 2.",
+        "design/world-dossier.rtl.md has 15-30 items with W ids, each mapped to an allowed axis, at least one 'רגע' item and one 'מסמך' or 'טופס' item, and a filled cliche exercise.",
+        "Facts the prompt does not give (prices, founding year, customer quotes) are marked [לבירור] and turned into questions, never invented.",
+        "At least two directions are shown; the safe one is marked 'בטוח? כן', shown to Nati and rejected with a reason; both swap tests are written.",
+        "Fonts come from 3-4 specimens rendered on the real layout and labelled A/B/C/D through anthropic-skills:nati-design-prefs, and the work stops for Nati's pick.",
+        "A hero idea board of 8-10 cheap ideas is shown before any prototype code.",
+        "design/storyboard.rtl.md has 3-5 chapters named by verbs in the order things happen for the customer, one persistent object from the bakery's world, and per chapter a focus, a motion moment, a real proof, a reduced last frame and a mobile column.",
+        "node <skill>/scripts/check-artifacts.mjs design exits 0 before the direction gate.",
+        "The stage 3 prototype covers only the hero and one chapter, desktop and mobile together, captured with shots.mjs at 1440x900, 1440x700 and 390 in both the motion and reduced passes.",
+        "Under reduced motion every moment shows its last frame: no Lenis, no scrub, no loops, no cursor.",
+        "Every section in main carries data-chapter and data-dossier, and check-artifacts.mjs design --html dist passes once the site is built.",
+        "No en dash, em dash or Hebrew maqaf appears in any file or message, and new Hebrew files end in .rtl.md.",
+        "Each gate asks Nati exactly one question with rendered options."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "redesign-existing-site",
+      "prompt": "יש לי לקוח, משרד אדריכלים קטן בבאר שבע, עם אתר וורדפרס ישן בכתובת https://studio-plans.example. הוא רוצה רדיזיין מלא שייראה כמו אתר שזוכה בפרסים, אבל בלי לאבד את הדירוג בגוגל ואת טופס הלידים שמביא לו עבודה.",
+      "expected_output": "Redesign mode: pattern-breaker's upgrade audit and a preservation baseline first, then the creative-direction stage with the diagnosis as evidence and a world dossier from architecture practice, a logged stack decision, before-and-after measurement, and a deploy that waits for Nati with a rollback point.",
+      "files": [],
+      "expectations": [
+        "Stage 0 picks redesign mode and runs pattern-breaker's upgrade audit first: a DIAGNOSIS and a preserve.mjs snapshot of the current URLs.",
+        "What must survive is declared before any change (URLs, the H1 of each page, the lead form and its tracking) and every wave is checked with preserve.mjs diff against an intended.json.",
+        "Stage 2 still runs in full: the world dossier comes from the architects' trade (plans, sections, permits, site visits), not from the old site's look or from inspiration sites, and the DIAGNOSIS is used as evidence.",
+        "The stack is a logged decision (D1) with a reason, whether the WordPress stack is kept or replaced with redirects; nothing is switched silently.",
+        "If the project already has a root DECISIONS.md or DECISIONS.rtl.md, it stays the single decision log and gets the same columns; no second log is created.",
+        "Before and after screenshots of the same routes are taken with shots.mjs, and gates.mjs runs with --baseline and --lh-motion both.",
+        "mediawave-landing-page's Phase 2 inspiration and Phase 3 design system are not run.",
+        "Redirects, canonicals, the sitemap and a real 404 are checked before deploy, and the deploy waits for Nati's explicit approval with a tagged rollback point."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "harvest-award-site",
+      "prompt": "תפרק לי את heronaiapp.com, שזכה ב-Site of the Day של Awwwards. אני רוצה להבין איך הם בנו את מעברי הדיו, את הסמן ואת הפוטר, ומה מזה שווה לקחת לאתרים שלנו.",
+      "expected_output": "Harvest mode: the live site filmed and measured, the public case study and the Awwwards page read for facts and scores, and one principles-only harvest file that translates each technique into MediaWave's rules, marked as technique-stage material.",
+      "files": [],
+      "expectations": [
+        "Harvest mode is used: the live site is filmed with pattern-breaker's scroll-film at desktop, short and mobile, and the frames are read.",
+        "Facts come from sources that are cited (the Codrops case study, the Awwwards page, the served HTML), and anything not verified is marked as such.",
+        "Stated facts are precise where verified: GSAP 3.12.5 core and ScrollTrigger with SplitText and TextPlugin from 3.13.0, Lenis 1.1.5, SOTD score 7.7, Developer award 7.01 with markup 6.6 and accessibility 6.8.",
+        "One principles-only file is written at <skill>/references/harvest/<site-slug>.md from the harvest template; no code, assets, logos or brand colours are copied.",
+        "The weak spots to beat are named: no skip link, a vw-only root font size, separate animation loops for the cursor and the footer, no keyboard or touch path for the drag hero.",
+        "Each technique is translated into this skill's rules: SVG-internal mask, band-limited filter with a baked fallback, one clock through the engine, strict reduced motion, right-to-left direction.",
+        "The file says it is technique-stage material that never enters a client's stage 2.",
+        "lint-dashes.mjs passes on the harvest file."
+      ]
+    },
+    {
+      "id": 4,
+      "name": "reference-fidelity-material",
+      "prompt": "הנקודות שעשית בקצה הסרטון עדיין לא דומות ל-lamalama.com. שם הן שוברות צורה, יש כאלה ויש כאלה, וזה כאילו הסרטון עצמו משתנה בקצה. תהיה מדויק ותעלה לפרודקשן.",
+      "expected_output": "The fidelity route: the reference source is read before any new attempt (network list of lazy chunks, shaders cut out, uniform drivers), the site is shot with the GPU and zoomed crops, an inventory names the unit, levels, colour source, edge shape and pointer behaviour, the mechanism is rebuilt with the client's own signature, phone and desktop frames are shown, and the deploy follows the project's release rules.",
+      "files": [],
+      "expectations": [
+        "Reads the reference's shader source (or states why it cannot) before changing the material again.",
+        "Shoots the reference with the GPU on and compares zoomed crops (PNG, nearest neighbour), not only screenshots.",
+        "Names at least three small details Nati did not mention and says which will be built.",
+        "Keeps the mechanism but replaces the reference's signature (its glyph or order, palette, fonts) with the client's and logs the swap.",
+        "Keeps AA contrast, the accessibility settings and the overlap audit; shows a phone frame before or with the deploy."
+      ]
+    }
+  ],
+  "trigger_evals": [
+    {
+      "query": "לקוח חדש, מאפייה שכונתית בחולון. תתחיל לי אתר מאפס ברמה של Awwwards, מהבריף ועד העלייה לאוויר.",
+      "should_trigger": true,
+      "note": "new client site, Hebrew"
+    },
+    {
+      "query": "Start a new client website for a physiotherapy clinic: full pipeline from brief to launch, award level, Hebrew RTL.",
+      "should_trigger": true,
+      "note": "new client site, English"
+    },
+    {
+      "query": "רדיזיין מלא לאתר של רואה חשבון שאני מלווה, כולל כיוון קריאייטיבי חדש ובדיקות לפני מסירה.",
+      "should_trigger": true,
+      "note": "full redesign, Hebrew"
+    },
+    {
+      "query": "Before we design anything for my new carpentry client, build the world dossier and the storyboard.",
+      "should_trigger": true,
+      "note": "creative-direction artifacts, English"
+    },
+    {
+      "query": "תפרק לי את האתר שזכה היום ב-Site of the Day ותגיד מה לקחת ממנו.",
+      "should_trigger": true,
+      "note": "SOTD harvest, Hebrew"
+    },
+    {
+      "query": "צריך כיוון קריאייטיבי ותיק עולם ללקוחה חדשה, צלמת משפחות.",
+      "should_trigger": true,
+      "note": "creative direction, Hebrew"
+    },
+    {
+      "query": "תוסיף אנימציית גלילה לסקשן השירותים באתר הקיים שלי.",
+      "should_trigger": false,
+      "note": "one section or effect: pattern-breaker"
+    },
+    {
+      "query": "Make an animated Rive button for the contact form.",
+      "should_trigger": false,
+      "note": "one Rive piece: rive-studio"
+    },
+    {
+      "query": "תן ללקוח שלי אפשרות לערוך את הטקסטים והתמונות באתר בעצמו.",
+      "should_trigger": false,
+      "note": "CMS editing only: client-content-editor"
+    },
+    {
+      "query": "Run the ten gates on the site before I hand it to the client.",
+      "should_trigger": false,
+      "note": "pre-ship audit only: site-gate-audit"
+    },
+    {
+      "query": "תכין הצעת מחיר לאתר לעורך דין מרמת גן.",
+      "should_trigger": false,
+      "note": "proposal only: mediawave-landing-page"
+    },
+    {
+      "query": "The header overlaps the hero on iPhone, fix it.",
+      "should_trigger": false,
+      "note": "device defect: mobile-ux-fixer"
+    },
+    {
+      "query": "תעצב לי פוסטר לערב השקה של הספר.",
+      "should_trigger": false,
+      "note": "print design: nati-design-prefs"
+    }
+  ]
+}

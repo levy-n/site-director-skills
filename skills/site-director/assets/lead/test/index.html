@@ -1,0 +1,21 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{margin:0;font:18px/1.6 system-ui}section{min-height:120vh;padding:40px;border-bottom:1px solid #ccc}#modal{position:fixed;inset:20%;background:#fff;border:2px solid #000}#modal[hidden]{display:none}</style></head>
+<body><main>
+<section id="hero"><h1>כותרת</h1><a id="wa" href="https://wa.me/972000000000">וואטסאפ</a> <a id="jump" href="#contact">לטופס</a></section>
+<section id="services"><h2>שירותים</h2><p>טקסט</p></section>
+<section id="process" data-intent="interest"><h2>תהליך</h2></section>
+<section id="hold" data-intent="interest" style="min-height:420vh"><div style="position:sticky;top:0;height:100vh">החזקה ארוכה</div></section>
+<section id="faq" data-intent="interest"><h2>שאלות</h2><button id="q1" data-intent-signal>שאלה 1</button><button id="q2" data-intent-signal>שאלה 2</button></section>
+<section id="contact" data-intent="contact"><form id="f" onsubmit="event.preventDefault()"><input id="name" aria-label="שם"><button>שלח</button></form></section>
+<footer id="end" data-intent="end" style="min-height:60vh">סוף</footer>
+</main><div id="modal" role="dialog" hidden>popup</div>
+<script type="module">
+import { createLeadIntent } from './lead-intent.js';
+const U = new URLSearchParams(location.search); const s = Number(U.get('scale') || 1);
+window.opens = [];
+window.intent = createLeadIntent({
+  threshold: Number(U.get('threshold') || 2), minActiveMs: 12000*s, exitMinActiveMs: 15000*s, engagedActiveMs: 25000*s, interestDwellMs: 8000*s, hiddenReturnMs: 20000*s,
+  onOpen: (reason) => { window.opens.push({ reason, t: performance.now() }); document.getElementById('modal').hidden = false; },
+});
+window.ready = true;
+</script></body></html>

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>selftest · attribute layer</title>
+<script>
+(function (d, w) {
+  var h = d.documentElement;
+  if (/[?&]motion=0/.test(w.location.search) || w.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  h.classList.add('pb-pre');
+  w.setTimeout(function () { h.classList.remove('pb-pre'); }, 2500);
+})(document, window);
+</script>
+<style>
+  body { margin: 0; font: 18px/1.7 Arial, sans-serif; background: #f6f7f9; color: #15171a; transition: background-color .4s, color .4s; }
+  section { padding: 120px 24px; max-width: 900px; margin: 0 auto; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+  .cards div { background: #fff; padding: 24px; border-radius: 8px; }
+  .media { height: 320px; background: linear-gradient(135deg, #8aa, #345); border-radius: 8px; }
+  .pb-pre [data-pb-pre] { visibility: hidden; }
+  html.pb-on:not(.pb-reduced) [data-pb-stage] { height: var(--pb-len, 250svh); }
+  [data-pb-stage] > .pb-sticky { position: sticky; top: 0; min-height: 100svh; display: grid; place-items: center; overflow: clip; }
+  .stage-line { font-size: 48px; font-weight: 800; transform: translateX(calc((1 - var(--pb-p, 1)) * 30vw)); }
+  html[data-pb-act="dark"] body { background: #101215; color: #eef0f3; }
+</style>
+</head>
+<body>
+<section data-pb-zone="Z01"><h1>משרד קטן, תשובות ברורות.</h1><p>עמוד בדיקה לשכבת התנועה. כל התוכן כאן גלוי גם בלי JavaScript.</p></section>
+<section id="services" data-pb-zone="Z02">
+  <h2 data-pb="mask-lines">שלושה דברים שאנחנו עושים כל יום, בשבילכם ובשביל העסק</h2>
+  <div class="cards"><div data-pb="reveal">הנהלת חשבונות</div><div data-pb="reveal">דוחות שנתיים</div><div data-pb="reveal">ייעוץ מס</div></div>
+</section>
+<div data-pb-zone="Z03" data-pb-stage="story"><div class="pb-sticky"><p class="stage-line">משנת 2009 ברחובות.</p></div></div>
+<section data-pb-zone="Z04"><div class="media" data-pb="clip"></div><p data-pb="count">מלווים 140 עסקים.</p></section>
+<section id="contact" data-pb-zone="Z05" data-pb-act="dark"><h2 data-pb="mask-lines">דברו איתנו</h2><p>טלפון 08-9461273</p></section>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
+<script type="module">
+  import { startLayer } from '../../assets/engine/attribute-layer.js';
+  const go = () => startLayer({ gsap, ScrollTrigger, SplitText, Lenis });
+  if (document.readyState === 'complete') go(); else addEventListener('load', go, { once: true });
+</script>
+</body>
+</html>

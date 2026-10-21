@@ -1,0 +1,159 @@
+/* page-transition.css (Astro): the geometric RTL page mask (move T-07) for ClientRouter.
+ *
+ * Import it GLOBALLY (from the layout's frontmatter), never in a scoped <style>: the rules target
+ * the ::view-transition pseudo-elements of the root, which scoped styles cannot reach.
+ *
+ * How it looks: the old and the new page overlap. The new page is revealed by a diagonal clip-path
+ * edge that travels right to left on forward navigation (the Hebrew reading direction) and left to
+ * right on back navigation; the old page drifts 5% ahead of the edge underneath. 0.8 s.
+ *
+ * Requirements in the layout (BaseLayout.example.astro does all of them):
+ * - <ClientRouter /> in <head>, and NO transition:* directive on <html>: any directive there renames
+ *   the root snapshot from "root" to an Astro scope name and every (root) rule below stops matching.
+ * - The header: transition:name="site-header" transition:animate="none". Astro then emits
+ *   animation: none for its group, so the header stays still above the wipe.
+ * - The persisted cursor layer (if the site has one) carries class "mw-cursor-layer"; the rules at
+ *   the end make it a fixed full-screen layer on top of the page and pin it above the wipe. The
+ *   layout adds no CSS of its own for it.
+ *
+ * ClientRouter sets html[data-astro-transition="forward" | "back"] for the length of a transition
+ * and keeps it across its root-attribute swap; the back rules key on it.
+ * The 0.8 s duration and the old/new overlap follow Heron AI's page transition (Bearplus, Codrops
+ * case study, 12 Oct 2026); the geometry and the code are our own.
+ */
+
+:root {
+  --mw-vt-duration: 0.8s;
+  /* a slow start and a long settle: the edge reads as drawn, not slid */
+  --mw-vt-ease: cubic-bezier(0.77, 0, 0.18, 1);
+  /* horizontal run of the diagonal edge, as a share of the width */
+  --mw-vt-slant: 18%;
+}
+
+/* The transition overlay never swallows clicks or hovers. */
+::view-transition {
+  pointer-events: none;
+}
+
+/* Forward: old page underneath, drifting left ahead of the edge; new page on top, revealed by the
+   edge. mix-blend-mode: normal replaces the UA crossfade's plus-lighter blending, which would wash
+   out the overlap. */
+::view-transition-old(root) {
+  --mw-drift: -5%;
+  animation: mw-drift var(--mw-vt-duration) var(--mw-vt-ease) both;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  animation: mw-wipe-rtl var(--mw-vt-duration) var(--mw-vt-ease) both;
+  mix-blend-mode: normal;
+}
+
+/* Back: the mirror. */
+html[data-astro-transition="back"]::view-transition-old(root) {
+  --mw-drift: 5%;
+}
+html[data-astro-transition="back"]::view-transition-new(root) {
+  animation-name: mw-wipe-ltr;
+}
+
+/* The visible part of the new page is a 4-vertex polygon (top-start, top-far, bottom-far,
+   bottom-start). Its moving side is the diagonal from the top vertex to the bottom vertex, which
+   stays one slant apart for the whole run, so the edge travels without turning. Both keyframes of
+   each wipe keep 4 vertices: clip-path polygons interpolate only between equal vertex counts.
+   At "from" the visible part lies entirely off screen; at "to" it covers the whole screen. */
+@keyframes mw-wipe-rtl {
+  from {
+    clip-path: polygon(100% 0, calc(100% + var(--mw-vt-slant)) 0, calc(100% + var(--mw-vt-slant)) 100%, calc(100% + var(--mw-vt-slant)) 100%);
+  }
+  to {
+    clip-path: polygon(calc(0% - var(--mw-vt-slant)) 0, calc(100% + var(--mw-vt-slant)) 0, calc(100% + var(--mw-vt-slant)) 100%, 0% 100%);
+  }
+}
+/* The mirror image of mw-wipe-rtl (x becomes 100% - x, vertex for vertex). */
+@keyframes mw-wipe-ltr {
+  from {
+    clip-path: polygon(0% 0, calc(0% - var(--mw-vt-slant)) 0, calc(0% - var(--mw-vt-slant)) 100%, calc(0% - var(--mw-vt-slant)) 100%);
+  }
+  to {
+    clip-path: polygon(calc(100% + var(--mw-vt-slant)) 0, calc(0% - var(--mw-vt-slant)) 0, calc(0% - var(--mw-vt-slant)) 100%, 100% 100%);
+  }
+}
+@keyframes mw-drift {
+  to {
+    translate: var(--mw-drift) 0;
+  }
+}
+
+/* The persisted cursor layer stays above the wipe and does not move with it. A plain CSS
+   view-transition-name, because combining transition:persist and transition:name on one element
+   is unconfirmed.
+   The layer itself must be a full-screen fixed box on top of the page: a view-transition-name makes
+   the element a stacking context, which traps the canvas's own z-index inside it, and the snapshot
+   is the size of the element. As a static wrapper (0 px tall, the canvas inside is fixed) the dot
+   was hidden under any sticky header with a z-index and vanished for the whole wipe (measured:
+   0 dot pixels over a z-index 10 header and 0 mid-wipe; 64 and 64 with this rule). */
+.mw-cursor-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  view-transition-name: mw-cursor;
+}
+/* During the wipe the layer is a snapshot group; it stays above every other named group (a header
+   group a site gives z-index 100, for example), as the canvas does on the page. */
+::view-transition-group(mw-cursor) {
+  animation: none;
+  z-index: 9999;
+}
+::view-transition-old(mw-cursor) {
+  display: none;
+}
+::view-transition-new(mw-cursor) {
+  animation: none;
+}
+
+/* First-load entrance, CSS only. astro:page-load waits for window load (every image), so a JS
+   entrance on the first load would flash late. Elements with data-intro rise in once; during a
+   ClientRouter transition the animation holds its first frame and plays when the wipe has ended
+   (ClientRouter removes data-astro-transition then). Never put data-intro="fade" on the LCP element
+   (the H1 or the hero poster): an LCP element must never start at opacity 0. data-intro="rise"
+   only moves, so it is safe there. Stagger with style="--intro-i: 2".
+   Timing (our tuning): 0.7 s on an ease-out-expo curve, 0.6em of travel, 80 ms per --intro-i step,
+   so a row of three reads as one gesture rather than a queue. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion="off"]) [data-intro] {
+    animation: mw-intro-fade 0.7s cubic-bezier(0.16, 1, 0.3, 1) calc(var(--intro-i, 0) * 80ms) both;
+  }
+  html:not([data-motion="off"]) [data-intro="rise"] {
+    animation-name: mw-intro-rise;
+  }
+  html[data-astro-transition] [data-intro] {
+    animation-play-state: paused;
+  }
+}
+@keyframes mw-intro-fade {
+  from {
+    opacity: 0;
+    translate: 0 0.6em;
+  }
+}
+@keyframes mw-intro-rise {
+  from {
+    translate: 0 0.6em;
+  }
+}
+
+/* Strict reduced motion: no wipe, no drift, no intro; an instant swap. Our own rule, because
+   Astro's built-in one only ships with transition:* directives. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+html[data-motion="off"]::view-transition-group(*),
+html[data-motion="off"]::view-transition-old(*),
+html[data-motion="off"]::view-transition-new(*) {
+  animation: none !important;
+}
